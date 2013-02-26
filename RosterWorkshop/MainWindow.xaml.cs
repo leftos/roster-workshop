@@ -583,7 +583,7 @@ namespace RosterWorkshop
 
                             basePlayer["TeamID1"] = baseTeam["ID"];
                             basePlayer["TeamID2"] = baseTeam["ID"];
-                            basePlayer["IsFA"] = 0;
+                            basePlayer["IsFA"] = "0";
                             baseTeam[rosterSpot] = basePlayer["ID"];
                         }
                         else if (matchingPlayers.Count == 0)
