@@ -26,7 +26,7 @@ namespace RosterWorkshop
             var teamsFile = path + REDitorInfo.TeamsCSVName;
             var playersFile = path + REDitorInfo.PlayersCSVName;
             
-            if !(File.Exists(teamsFile) && File.Exists(playersFile))
+            if (!File.Exists(teamsFile) || !File.Exists(playersFile))
             {
                 MessageBox.Show("You need both the Players and Teams tab exported to CSV in order to fix Team IDs.");
                 return;
