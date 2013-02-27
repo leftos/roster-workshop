@@ -391,4 +391,6 @@ Gear
 	GShsACol1
 	GShsACol2
 	GShsACol3
+Headshape
+Awards
 Team Rosters

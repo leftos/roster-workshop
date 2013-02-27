@@ -9,6 +9,9 @@ Quick Notes
 	
 	To find out more about REditor and its various licenses, visit
 		http://www.red-mods.com
+
+Requirements
+	This tool requires REDitor v[insert version here] or later. In other words, it is not compatible with REDitor II or older versions.
 		
 Usage Scenario Examples
 	- You have two rosters, one that has the latest rosters and transfers and players, and an older one that, however, has more detailed information for the same players (such as signature shots, accurate gear, ratings and tendencies, etc). You can user Roster Merge & Repair to copy over any information you want from your older roster to the new one, keeping the roster otherwise intact, but also having the updated player attributes.

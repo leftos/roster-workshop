@@ -29,14 +29,22 @@ namespace RosterWorkshop
                 case Mode.PlayersInDoTeams:
                     txbMessage.Text = "There's more than one matching players in the base roster for the following player:";
                     break;
+                case Mode.Staff:
+                    txbMessage.Text = "There's more than one matching staff members in the base roster for the following staff member:";
+                    chkCurrentOnly.Visibility = Visibility.Collapsed;
+                    chkSelectiveConflict.Visibility = Visibility.Collapsed;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException("mode");
             }
-            txbMessage.Text = "\n" + current;
+            txbMessage.Text += "\n" + current;
             lstMatches.ItemsSource = matching;
         }
 
         private void btnOK_Click(object sender, RoutedEventArgs e)
         {
-            if (lstMatches.SelectedIndex == -1) return;
+            if (lstMatches.SelectedIndex == -1)
+                return;
 
             MainWindow.ConflictResult = lstMatches.SelectedIndex;
             Close();
@@ -58,7 +66,8 @@ namespace RosterWorkshop
         {
             Players,
             Teams,
-            PlayersInDoTeams
+            PlayersInDoTeams,
+            Staff
         }
     }
 }
