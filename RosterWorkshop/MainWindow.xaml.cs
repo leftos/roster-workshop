@@ -1036,5 +1036,15 @@ namespace RosterWorkshop
             Helper.SetRegistrySetting("Left", Left);
             Helper.SetRegistrySetting("Top", Top);
         }
+
+        private void mnuRepairFixASAIDs_Click(object sender, RoutedEventArgs e)
+        {
+            if (noRoster())
+                return;
+
+            RepairTools.FixASAIDs(txtRosterBase.Text);
+
+            MessageBox.Show("ASA_IDs fixed!");
+        }
     }
 }
