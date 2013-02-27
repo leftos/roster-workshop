@@ -23,6 +23,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using LeftosCommonLibrary;
@@ -91,6 +92,8 @@ namespace RosterWorkshop
 
             rostersToMerge = new ObservableCollection<string>();
             lstRostersToMerge.ItemsSource = rostersToMerge;
+
+            Title += " v" + Assembly.GetExecutingAssembly().GetName().Version + " - by Lefteris \"Leftos\" Aslanoglou";
         }
 
         protected List<FooViewModel> root { get; set; }
@@ -237,6 +240,9 @@ namespace RosterWorkshop
             }
         }
 
+        // TODO: Add Jerseys handling
+        // TODO: Single team/singe player
+        // TODO: Replace instead of merge
         private void btnMerge_Click(object sender, RoutedEventArgs e)
         {
             if (lstRostersToMerge.Items.Count == 0 || String.IsNullOrWhiteSpace(txtRosterBase.Text))

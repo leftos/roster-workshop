@@ -124,5 +124,8 @@ namespace RosterWorkshop
             }
             throw new InvalidOperationException("List has no free IDs smaller or equal to " + maxInclusive);
         }
+
+        //TODO: Calculate Contract Years
+        //TODO: Fix PlNum & Player Order
     }
 }
