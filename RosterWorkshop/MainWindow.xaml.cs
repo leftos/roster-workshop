@@ -43,6 +43,11 @@ namespace RosterWorkshop
         public MainWindow()
         {
             InitializeComponent();
+
+            Height = Helper.GetRegistrySetting("Height", (int)Height);
+            Width = Helper.GetRegistrySetting("Width", (int)Width);
+            Left = Helper.GetRegistrySetting("Left", 0);
+            Top = Helper.GetRegistrySetting("Top", 0);
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -154,6 +159,7 @@ namespace RosterWorkshop
         private readonly Dictionary<string, Dictionary<string, bool?>> _mergeSettings = new Dictionary<string, Dictionary<string, bool?>>();
         public static bool OnlyShowCurrentMatchesForCurrent;
         public static bool NoConflictForMatchingTeamID;
+        public static bool PreferUnhidden;
         public static int ConflictResult;
 
         private void lstRostersToMerge_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -382,11 +388,17 @@ namespace RosterWorkshop
             {
                 validPlayersBase = validPlayersBase.Where(player => player["IsFA"] == "1").ToList();
             }
+            var shouldSkipHidden = chkPlayersSkipHidden.IsChecked == true;
+            if (shouldSkipHidden)
+            {
+                validPlayersBase = validPlayersBase.Where(player => player["IsFA"] == "0" && player["TeamID1"] == "-1").ToList();
+            }
             var invalidPlayersBase = playersBase.Where(player => !validPlayersBase.Contains(player)).ToList();
             var freePlayerIDs = invalidPlayersBase.Select(player => player["ID"].ToInt32()).ToList();
 
             NoConflictForMatchingTeamID = false;
             OnlyShowCurrentMatchesForCurrent = false;
+            PreferUnhidden = false;
 
             foreach (var pair in _mergeSettings)
             {
@@ -454,6 +466,14 @@ namespace RosterWorkshop
                                        };
                         }
                     }
+                    if (PreferUnhidden)
+                    {
+                        var unhiddenPlayers = matching.Where(pl => pl["IsFA"] != "0" || pl["TeamID1"] != "-1").ToList();
+                        if (unhiddenPlayers.Count == 1)
+                        {
+                            matching = new List<Dictionary<string, string>> {unhiddenPlayers[0]};
+                        }
+                    }
 
                     ConflictResult = 0;
                     if (matching.Count > 1)
@@ -499,7 +519,7 @@ namespace RosterWorkshop
                                 {
                                     var newHeadshapeID = freeHeadshapeIDs.Pop();
                                     baseHS = headshapesBase.Single(hs => hs["ID"] == newHeadshapeID.ToString());
-                                    pickedPlayer["HS_ID"] = newHeadshapeID.ToString();
+                                    //pickedPlayer["HS_ID"] = newHeadshapeID.ToString();
 
                                     // The base player will have a new HS_ID, so let's see if his old one should become available.
                                     if (playersBase.Count(pl => pl["HS_ID"] == basePlayer["HS_ID"]) == 1)
@@ -514,7 +534,7 @@ namespace RosterWorkshop
                                     if (playersBase.Count(pl => pl["HS_ID"] == basePlayer["HS_ID"]) == 1)
                                     {
                                         baseHS = headshapesBase.Single(hs => hs["ID"] == basePlayer["HS_ID"]);
-                                        pickedPlayer["HS_ID"] = basePlayer["HS_ID"];
+                                        //pickedPlayer["HS_ID"] = basePlayer["HS_ID"];
                                     }
                                     else
                                     {
@@ -568,6 +588,7 @@ namespace RosterWorkshop
                             {
                                 baseHS[property] = pickedHS[property];
                             }
+                            basePlayer["HS_ID"] = baseHS["ID"];
                         }
                     }
 
@@ -579,10 +600,10 @@ namespace RosterWorkshop
                         allChecked.Contains("Awards"))
                     {
                         var pickedAwards = awardsCur.Where(award => award["Pl_ASA_ID"] == pickedPlayer["ASA_ID"]).ToList();
-                        var baseAwards = awardsBase.Where(award => award["Pl_ASA_ID"] == basePlayer["ASA_ID"]).ToList();
-                        for (int i = 0; i < baseAwards.Count; i++)
+                        var basePlayerAwards = awardsBase.Where(award => award["Pl_ASA_ID"] == basePlayer["ASA_ID"]).ToList();
+                        for (int i = 0; i < basePlayerAwards.Count; i++)
                         {
-                            var baseAward = baseAwards[i];
+                            var baseAward = basePlayerAwards[i];
                             eraseAward(ref baseAward);
                             freeAwardIDs.Add(baseAward["ID"].ToInt32());
                         }
@@ -601,14 +622,22 @@ namespace RosterWorkshop
                                 break;
                             }
 
-                            foreach (var property in baseAwards[0].Keys.Where(key => key != "ID").ToList())
+                            foreach (var property in awardsBase[0].Keys.Where(key => key != "ID").ToList())
                             {
                                 if (property == "Pl_ASA_ID" && !allChecked.Contains("ASA_ID"))
                                 {
                                     continue;
                                 }
-                                baseAwards[baseIDToReplace][property] = pickedAward[property];
+                                awardsBase[baseIDToReplace][property] = pickedAward[property];
                             }
+                        }
+                    }
+                    else if (allChecked.Contains("ASA_ID") && !allChecked.Contains("Awards"))
+                    {
+                        var awardsToEdit = awardsBase.Where(aw => aw["Pl_ASA_ID"] == basePlayer["ASA_ID"]);
+                        foreach (var award in awardsToEdit)
+                        {
+                            award["Pl_ASA_ID"] = pickedPlayer["ASA_ID"];
                         }
                     }
 
@@ -617,7 +646,12 @@ namespace RosterWorkshop
                     #region Merge Player Entry
 
                     var notPlayerColumns = new List<string> {"Team Rosters", "Headshape", "Awards"};
-                    foreach (var property in allChecked.Where(prop => !notPlayerColumns.Contains(prop)).ToList())
+                    var columnsToMerge = allChecked.Where(prop => !notPlayerColumns.Contains(prop)).ToList();
+                    if (allChecked.Contains("Headshape"))
+                    {
+                        columnsToMerge.Remove("HS_ID");
+                    }
+                    foreach (var property in columnsToMerge)
                     {
                         if (curIsDraftClass && property == "BirthYear")
                         {
@@ -698,6 +732,14 @@ namespace RosterWorkshop
                                                   };
                             }
                         }
+                        if (PreferUnhidden)
+                        {
+                            var unhiddenPlayers = matchingPlayers.Where(pl => pl["IsFA"] != "0" || pl["TeamID1"] != "-1").ToList();
+                            if (unhiddenPlayers.Count == 1)
+                            {
+                                matchingPlayers = new List<Dictionary<string, string>> { unhiddenPlayers[0] };
+                            }
+                        }
 
                         ConflictResult = 0;
 
@@ -760,15 +802,19 @@ namespace RosterWorkshop
                                 baseStaffMember =>
                                 baseStaffMember["Last_Name"] == staffMemberToMerge["Last_Name"] &&
                                 baseStaffMember["First_Name"] == staffMemberToMerge["First_Name"]).ToList();
+                        var matchingStaffBySType =
+                            matchingStaff.Where(baseStaffMember => baseStaffMember["SType"] == staffMemberToMerge["SType"]).ToList();
                         var matchingStaffByExperience =
-                            matchingStaff.Where(baseStaffMember => baseStaffMember["Experience"] == staffMemberToMerge["Experience"])
+                            matchingStaffBySType.Where(baseStaffMember => baseStaffMember["Experience"] == staffMemberToMerge["Experience"])
                                          .ToList();
 
                         ConflictResult = 0;
 
                         if (matchingStaff.Count >= 1)
                         {
-                            var finalMatchingStaff = matchingStaffByExperience.Count == 0 ? matchingStaff : matchingStaffByExperience;
+                            var finalMatchingStaff = matchingStaffByExperience.Count == 0
+                                                         ? (matchingStaffBySType.Count == 0 ? matchingStaff : matchingStaffBySType)
+                                                         : matchingStaffByExperience;
                             if (finalMatchingStaff.Count > 1)
                             {
                                 var cw = new ConflictWindow(presentStaff(staffMemberToMerge),
@@ -910,8 +956,8 @@ namespace RosterWorkshop
 
         private static string presentStaff(Dictionary<string, string> staff)
         {
-            return String.Format("{0}: {1} {2} (Experience: {3} years)", staff["ID"], staff["Last_Name"], staff["First_Name"],
-                                 staff["Experience"]);
+            return String.Format("{0}: {1} {2} (SType: {3} - Experience: {4} years)", staff["ID"], staff["Last_Name"], staff["First_Name"],
+                                 staff["SType"], staff["Experience"]);
         }
 
         private static string presentTeam(Dictionary<string, string> team)
@@ -934,7 +980,9 @@ namespace RosterWorkshop
             try
             {
                 var teamName = (player["TeamID1"] != "-1") ? teams.Single(team => team["ID"] == player["TeamID1"])["Name"] : "Free Agent";
-                s += string.Format(" ({0})", teamName);
+                var isHidden = (player["IsFA"] == "0" && player["TeamID1"] == "-1") ? "Hidden" : "Unhidden";
+                s += string.Format(" ({0} - {1})", teamName, isHidden);
+
             }
             catch (InvalidOperationException)
             {
@@ -979,6 +1027,14 @@ namespace RosterWorkshop
             RepairTools.FixSorting(txtRosterBase.Text);
 
             MessageBox.Show("Sorting fixed!");
+        }
+
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            Helper.SetRegistrySetting("Height", Height);
+            Helper.SetRegistrySetting("Width", Width);
+            Helper.SetRegistrySetting("Left", Left);
+            Helper.SetRegistrySetting("Top", Top);
         }
     }
 }

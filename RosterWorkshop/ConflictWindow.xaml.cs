@@ -25,6 +25,7 @@ namespace RosterWorkshop
                     txbMessage.Text = "There's more than one matching teams in the base roster for the following team:";
                     chkCurrentOnly.Visibility = Visibility.Collapsed;
                     chkSelectiveConflict.Visibility = Visibility.Collapsed;
+                    chkPreferUnhidden.Visibility = Visibility.Collapsed;
                     break;
                 case Mode.PlayersInDoTeams:
                     txbMessage.Text = "There's more than one matching players in the base roster for the following player:";
@@ -33,12 +34,17 @@ namespace RosterWorkshop
                     txbMessage.Text = "There's more than one matching staff members in the base roster for the following staff member:";
                     chkCurrentOnly.Visibility = Visibility.Collapsed;
                     chkSelectiveConflict.Visibility = Visibility.Collapsed;
+                    chkPreferUnhidden.Visibility = Visibility.Collapsed;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException("mode");
             }
             txbMessage.Text += "\n" + current;
             lstMatches.ItemsSource = matching;
+
+            chkCurrentOnly.IsChecked = MainWindow.OnlyShowCurrentMatchesForCurrent;
+            chkSelectiveConflict.IsChecked = MainWindow.NoConflictForMatchingTeamID;
+            chkPreferUnhidden.IsChecked = MainWindow.PreferUnhidden;
         }
 
         private void btnOK_Click(object sender, RoutedEventArgs e)
@@ -60,6 +66,7 @@ namespace RosterWorkshop
         {
             MainWindow.NoConflictForMatchingTeamID = chkSelectiveConflict.IsChecked.GetValueOrDefault();
             MainWindow.OnlyShowCurrentMatchesForCurrent = chkCurrentOnly.IsChecked.GetValueOrDefault();
+            MainWindow.PreferUnhidden = chkPreferUnhidden.IsChecked.GetValueOrDefault();
         }
 
         public enum Mode
