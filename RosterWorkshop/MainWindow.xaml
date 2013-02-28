@@ -82,10 +82,12 @@
                     Width="127" Name="btnRepair" Click="btnRepair_Click">
                 <Button.ContextMenu>
                     <ContextMenu Name="mnuRepair">
-                        <MenuItem Header="Fix TeamIDs &amp; FA Contracts" Name="mnuRepairFixTeamIDs"
+                        <MenuItem Header="Fix TeamIDs and Free Agent Contracts" Name="mnuRepairFixTeamIDs"
                                   Click="mnuRepairFixTeamIDs_Click" />
                         <MenuItem Header="Fix ASA_IDs" Name="mnuRepairFixASAIDs" Click="mnuRepairFixASAIDs_Click" />
-                        <MenuItem Header="Fix Sorting" Name="mnuRepairFixSorting" Click="mnuRepairFixSorting_Click" />
+                        <MenuItem Header="Fix CSV Sorting" Name="mnuRepairFixSorting" Click="mnuRepairFixSorting_Click" />
+                        <MenuItem Header="Fix PlNum and Player Order in Team Rosters" Name="mnuRepairFixPlNum" Click="mnuRepairFixPlNum_Click" />
+                        <MenuItem Header="Fix Contract Lengths and FA Contract Information" Name="mnuRepairFixContracts" Click="mnuRepairFixContracts_Click" />
                     </ContextMenu>
                 </Button.ContextMenu>
             </Button>

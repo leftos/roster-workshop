@@ -5,6 +5,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RosterWorkshop", "RosterWor
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{36A965F9-E553-48C0-8D8E-949A4E69B901}"
 	ProjectSection(SolutionItems) = preProject
+		RW ToDo.txt = RW ToDo.txt
 		rwversion.txt = rwversion.txt
 	EndProjectSection
 EndProject

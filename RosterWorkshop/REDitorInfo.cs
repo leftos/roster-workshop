@@ -32,6 +32,7 @@ namespace RosterWorkshop
         public const string PlayersCSVName = @"\Players.csv";
         public const string HeadshapesCSVName = @"\Headshapes.csv";
         public const string AwardsCSVName = @"\Awards.csv";
+        public const string JerseysCSVName = @"\Jerseys.csv";
 
         public static bool isFreeAgentPlayer(Dictionary<string, string> player)
         {

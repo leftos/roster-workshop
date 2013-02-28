@@ -79,7 +79,21 @@ namespace RosterWorkshop
                 while (i != lines.Count - 1 && lines[++i].StartsWith("\t"))
                 {
                     var line = lines[i];
-                    category.Children.Add(new FooViewModel(line.Replace("\t", "")));
+                    var item = new FooViewModel(line.Replace("\t", ""));
+                    category.Children.Add(item);
+                    if (i == lines.Count - 1)
+                    {
+                        break;
+                    }
+                    while (i != lines.Count - 1 && lines[++i].StartsWith("\t\t"))
+                    {
+                        item.Children.Add(new FooViewModel(lines[i].Replace("\t", "")));
+                    }
+                    i--;
+                }
+                if (i == lines.Count - 1)
+                {
+                    break;
                 }
                 i--;
             }
@@ -88,12 +102,9 @@ namespace RosterWorkshop
             rootItem.Initialize();
             root = new List<FooViewModel> {rootItem};
 
-            trvColumns.ItemsSource = root;
+            prepareExpanded(root);
 
-            foreach (FooViewModel item in trvColumns.Items)
-            {
-                item.IsExpanded = item.Name == "All";
-            }
+            trvColumns.ItemsSource = root;
 
             rbPlayersCurrent.IsChecked = true;
             rbTeamsNone.IsChecked = true;
@@ -102,6 +113,15 @@ namespace RosterWorkshop
             lstRostersToMerge.ItemsSource = rostersToMerge;
 
             Title += " v" + Assembly.GetExecutingAssembly().GetName().Version + " - by Lefteris \"Leftos\" Aslanoglou";
+        }
+
+        private void prepareExpanded(IEnumerable<FooViewModel> list)
+        {
+            foreach (FooViewModel item in list)
+            {
+                item.IsExpanded = item.Name == "All" || item.Name == "Players" || item.Name == "Teams";
+                prepareExpanded(item.Children);
+            }
         }
 
         private void btnOpenRosterBase_Click(object sender, RoutedEventArgs e)
@@ -266,6 +286,9 @@ namespace RosterWorkshop
             var staffToMerge = new List<Dictionary<string, string>>();
             var staffBase = new List<Dictionary<string, string>>();
             var freeStaffIDs = new List<int>();
+            var jerseysToMerge = new List<Dictionary<string, string>>();
+            var jerseysBase = new List<Dictionary<string, string>>();
+            var freeJerseyIDs = new List<int>();
 
             var baseDir = txtRosterBase.Text;
             var teamsBaseFile = baseDir + REDitorInfo.TeamsCSVName;
@@ -273,13 +296,14 @@ namespace RosterWorkshop
             var teamsToMergeDir = "";
             if (doTeams)
             {
-                if (doTeams && _mergeSettings.Values.All(dict => dict["Team Rosters"] == false))
+                if (_mergeSettings.Values.Count(dict => dict["Teams"] == true || dict["Teams"] == null) != 1)
                 {
-                    MessageBox.Show("You haven't selected which roster to copy the Team Rosters from.");
+                    MessageBox.Show("You have selected zero or more than one roster to copy team information from. You must only " +
+                                    "select one roster for that for those particular categories.");
                     return;
                 }
 
-                teamsToMergeDir = _mergeSettings.Single(pair => pair.Value["Team Rosters"] == true).Key;
+                teamsToMergeDir = _mergeSettings.Single(pair => pair.Value["Rosters"] == true).Key;
                 var teamsToMergeFile = teamsToMergeDir + REDitorInfo.TeamsCSVName;
                 if (!File.Exists(teamsBaseFile) || !File.Exists(teamsToMergeFile))
                 {
@@ -324,6 +348,29 @@ namespace RosterWorkshop
                             team => team.Keys.Where(key => key.StartsWith("Staff_")).Select(key => team[key].ToInt32()).ToList()).ToList();
                     freeStaffIDs = staffBase.Select(st => st["ID"].ToInt32()).Where(id => !usedStaffIDs.Contains(id)).ToList();
                     staffToMerge = CSV.DictionaryListFromCSVFile(teamsToMergeDir + REDitorInfo.StaffCSVName);
+                }
+
+                jerseysBase = new List<Dictionary<string, string>>();
+                if (!File.Exists(baseDir + REDitorInfo.JerseysCSVName) ||
+                    _mergeSettings.Keys.Any(key => !File.Exists(key + REDitorInfo.JerseysCSVName)))
+                {
+                    if (
+                        MessageBox.Show(
+                            "You haven't exported the Jerseys tab for one or more rosters, which means that any teams " +
+                            "that are merged and have jerseys that aren't in the base roster may have the wrong jerseys " +
+                            "after the merge.\n\nAre you sure you want to continue?", App.AppName, MessageBoxButton.YesNo,
+                            MessageBoxImage.Question) != MessageBoxResult.Yes)
+                    {
+                        return;
+                    }
+                }
+                else
+                {
+                    jerseysBase = CSV.DictionaryListFromCSVFile(baseDir + REDitorInfo.JerseysCSVName);
+                    var usedJerseysIDs =
+                        jerseysBase.Where(je => !String.IsNullOrWhiteSpace(je["Texture"])).Select(je => je["ID"].ToInt32()).ToList();
+                    freeJerseyIDs = jerseysBase.Select(st => st["ID"].ToInt32()).Where(id => !usedJerseysIDs.Contains(id)).ToList();
+                    jerseysToMerge = CSV.DictionaryListFromCSVFile(teamsToMergeDir + REDitorInfo.JerseysCSVName);
                 }
             }
             else
@@ -653,9 +700,10 @@ namespace RosterWorkshop
                     #endregion Awards
 
                     #region Merge Player Entry
-
-                    var notPlayerColumns = new List<string> {"Team Rosters", "Headshape", "Awards"};
+                    
+                    var notPlayerColumns = new List<string> {"Rosters", "Headshape", "Awards", "Staff"};
                     var columnsToMerge = allChecked.Where(prop => !notPlayerColumns.Contains(prop)).ToList();
+                    
                     if (allChecked.Contains("Headshape"))
                     {
                         columnsToMerge.Remove("HS_ID");
@@ -801,61 +849,105 @@ namespace RosterWorkshop
                         playerIDsInRosters.Add(baseTeam[rosterSpot].ToInt32());
                     }
 
-                    foreach (var key in newTeam.Keys.Where(key => key.StartsWith("Staff_")))
+                    #region Staff
+
+                    if (_mergeSettings.Values.Any(dict => dict["Staff"] == true))
                     {
-                        var staffIDToMerge = newTeam[key];
-                        var staffMemberToMerge = staffToMerge.Single(st => st["ID"] == staffIDToMerge);
-
-                        var matchingStaff =
-                            staffBase.Where(
-                                baseStaffMember =>
-                                baseStaffMember["Last_Name"] == staffMemberToMerge["Last_Name"] &&
-                                baseStaffMember["First_Name"] == staffMemberToMerge["First_Name"]).ToList();
-                        var matchingStaffBySType =
-                            matchingStaff.Where(baseStaffMember => baseStaffMember["SType"] == staffMemberToMerge["SType"]).ToList();
-                        var matchingStaffByExperience =
-                            matchingStaffBySType.Where(baseStaffMember => baseStaffMember["Experience"] == staffMemberToMerge["Experience"])
-                                                .ToList();
-
-                        ConflictResult = 0;
-
-                        if (matchingStaff.Count >= 1)
+                        foreach (var key in newTeam.Keys.Where(key => key.StartsWith("Staff_")))
                         {
-                            var finalMatchingStaff = matchingStaffByExperience.Count == 0
-                                                         ? (matchingStaffBySType.Count == 0 ? matchingStaff : matchingStaffBySType)
-                                                         : matchingStaffByExperience;
-                            if (finalMatchingStaff.Count > 1)
-                            {
-                                var cw = new ConflictWindow(presentStaff(staffMemberToMerge),
-                                                            finalMatchingStaff.Select(presentStaff).ToList(), ConflictWindow.Mode.Staff);
-                                cw.ShowDialog();
+                            var staffIDToMerge = newTeam[key];
+                            var staffMemberToMerge = staffToMerge.Single(st => st["ID"] == staffIDToMerge);
 
-                                if (ConflictResult == -2)
+                            var matchingStaff =
+                                staffBase.Where(
+                                    baseStaffMember =>
+                                    baseStaffMember["Last_Name"] == staffMemberToMerge["Last_Name"] &&
+                                    baseStaffMember["First_Name"] == staffMemberToMerge["First_Name"]).ToList();
+                            var matchingStaffBySType =
+                                matchingStaff.Where(baseStaffMember => baseStaffMember["SType"] == staffMemberToMerge["SType"]).ToList();
+                            var matchingStaffByExperience =
+                                matchingStaffBySType.Where(
+                                    baseStaffMember => baseStaffMember["Experience"] == staffMemberToMerge["Experience"]).ToList();
+
+                            ConflictResult = 0;
+
+                            if (matchingStaff.Count >= 1)
+                            {
+                                var finalMatchingStaff = matchingStaffByExperience.Count == 0
+                                                             ? (matchingStaffBySType.Count == 0 ? matchingStaff : matchingStaffBySType)
+                                                             : matchingStaffByExperience;
+                                if (finalMatchingStaff.Count > 1)
                                 {
-                                    continue;
-                                }
-                            }
-                            var staffMemberToReplace = staffBase.Single(st => st["ID"] == finalMatchingStaff[ConflictResult]["ID"]);
-                            foreach (var property in staffMemberToReplace.Keys.Where(name => name != "ID").ToList())
-                            {
-                                staffMemberToReplace[property] = staffMemberToMerge[property];
-                            }
-                        }
-                        else if (matchingStaff.Count == 0)
-                        {
-                            if (freeStaffIDs.Count > 0)
-                            {
-                                var newStaffID = freeStaffIDs.Pop();
+                                    var cw = new ConflictWindow(presentStaff(staffMemberToMerge),
+                                                                finalMatchingStaff.Select(presentStaff).ToList(), ConflictWindow.Mode.Staff);
+                                    cw.ShowDialog();
 
-                                var staffMemberToReplace = staffBase.Single(st => st["ID"] == newStaffID.ToString());
+                                    if (ConflictResult == -2)
+                                    {
+                                        continue;
+                                    }
+                                }
+                                var staffMemberToReplace = staffBase.Single(st => st["ID"] == finalMatchingStaff[ConflictResult]["ID"]);
                                 foreach (var property in staffMemberToReplace.Keys.Where(name => name != "ID").ToList())
                                 {
                                     staffMemberToReplace[property] = staffMemberToMerge[property];
                                 }
-                                baseTeam[key] = newStaffID.ToString();
+                            }
+                            else if (matchingStaff.Count == 0)
+                            {
+                                if (freeStaffIDs.Count > 0)
+                                {
+                                    var newStaffID = freeStaffIDs.Pop();
+
+                                    var staffMemberToReplace = staffBase.Single(st => st["ID"] == newStaffID.ToString());
+                                    foreach (var property in staffMemberToReplace.Keys.Where(name => name != "ID").ToList())
+                                    {
+                                        staffMemberToReplace[property] = staffMemberToMerge[property];
+                                    }
+                                    baseTeam[key] = newStaffID.ToString();
+                                }
                             }
                         }
                     }
+
+                    #endregion Staff
+
+                    #region Jerseys
+
+                    if (_mergeSettings.Values.Any(dict => dict["Jerseys"] == true))
+                    {
+                        var dummyGID =
+                            (Math.Max(teamsToMerge.Max(te => te["GID"].ToInt32()), teamsBase.Max(te => te["GID"].ToInt32())) + 1).ToString();
+                        var baseTeamJerseys = jerseysBase.Where(je => je["GID"] == baseTeam["GID"]);
+                        var newTeamJerseys = jerseysToMerge.Where(je => je["GID"] == newTeam["GID"]);
+                        foreach (var jersey in baseTeamJerseys)
+                        {
+                            jersey["Texture"] = "";
+                            jersey["GID"] = dummyGID;
+                            freeJerseyIDs.Add(jersey["ID"].ToInt32());
+                        }
+                        foreach (var jersey in newTeamJerseys)
+                        {
+                            var jerseyToMerge = jersey;
+                            if (freeJerseyIDs.Count > 0)
+                            {
+                                var newJerseyID = freeJerseyIDs.Pop();
+                                var jerseyToReplace = jerseysBase.Single(je => je["ID"] == newJerseyID.ToString());
+                                foreach (var key in jersey.Keys.Where(name => name != "ID").ToList())
+                                {
+                                    jerseyToReplace[key] = jerseyToMerge[key];
+                                }
+                            }
+                            else
+                            {
+                                MessageBox.Show("Not enough space on the base roster to copy a required jersey. Operation aborted.",
+                                                App.AppName, MessageBoxButton.OK, MessageBoxImage.Error);
+                                return;
+                            }
+                        }
+                    }
+
+                    #endregion Jerseys
                 }
 
                 var playersBaseNotInRoster =
@@ -926,7 +1018,21 @@ namespace RosterWorkshop
                 }
 
                 CSV.CSVFromDictionaryList(teamsBase, baseDir + REDitorInfo.TeamsCSVName);
-                CSV.CSVFromDictionaryList(staffBase, baseDir + REDitorInfo.StaffCSVName);
+                if (staffBase.Count > 0)
+                {
+                    CSV.CSVFromDictionaryList(staffBase, baseDir + REDitorInfo.StaffCSVName);
+                }
+                if (jerseysBase.Count > 0)
+                {
+                    // Fix Jerseys' unique JerseyIDs
+                    for (int i = 0; i < jerseysBase.Count; i++)
+                    {
+                        var jersey = jerseysBase[i];
+                        jersey["JerseyID"] = i.ToString();
+                    }
+
+                    CSV.CSVFromDictionaryList(jerseysBase, baseDir + REDitorInfo.JerseysCSVName);
+                }
             }
 
             #endregion Do Teams
@@ -1059,6 +1165,26 @@ namespace RosterWorkshop
             RepairTools.FixASAIDs(txtRosterBase.Text);
 
             MessageBox.Show("ASA_IDs fixed!");
+        }
+
+        private void mnuRepairFixPlNum_Click(object sender, RoutedEventArgs e)
+        {
+            if (noRoster())
+                return;
+
+            RepairTools.FixPlayerNumberAndOrder(txtRosterBase.Text);
+
+            MessageBox.Show("PlNum & player order in team rosters fixed!");
+        }
+        
+        private void mnuRepairFixContracts_Click(object sender, RoutedEventArgs e)
+        {
+            if (noRoster())
+                return;
+
+            RepairTools.FixASAIDs(txtRosterBase.Text);
+
+            MessageBox.Show("Contract lengths for all players and contract information for free agents fixed!");
         }
     }
 }

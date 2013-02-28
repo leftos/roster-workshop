@@ -147,7 +147,110 @@ namespace RosterWorkshop
             throw new InvalidOperationException("List has no free IDs smaller or equal to " + maxInclusive);
         }
 
+        public static void FixPlayerNumberAndOrder(string path)
+        {
+            var teamsFile = path + REDitorInfo.TeamsCSVName;
+
+            if (!File.Exists(teamsFile))
+            {
+                MessageBox.Show("You need the Teams tab exported to CSV for this feature.");
+                return;
+            }
+
+            var teams = CSV.DictionaryListFromCSVFile(teamsFile);
+
+            foreach (var team in teams)
+            {
+                var curTeam = team;
+                var rosterKeys = curTeam.Keys.Where(key => key.StartsWith("Ros_")).ToList();
+                for (int i = 0; i < rosterKeys.Count; i++)
+                {
+                    var key = rosterKeys[i];
+                    var curID = curTeam[key];
+                    if (curID == "-1")
+                    {
+                        for (int j = rosterKeys.Count - 1; j > i; j--)
+                        {
+                            var newKey = rosterKeys[j];
+                            var newID = curTeam[newKey];
+                            if (newID != "-1")
+                            {
+                                curTeam[key] = newID;
+                                curTeam[newKey] = curID;
+                            }
+                        }
+                    }
+                }
+
+                curTeam["PlNum"] = rosterKeys.Count(key => curTeam[key] != "-1").ToString();
+            }
+
+            CSV.CSVFromDictionaryList(teams, teamsFile);
+        }
+
+        public static void FixContracts(string path)
+        {
+            var playersFile = path + REDitorInfo.PlayersCSVName;
+
+            if (!File.Exists(playersFile))
+            {
+                MessageBox.Show("You need the Teams tab exported to CSV for this feature.");
+                return;
+            }
+
+            var players = CSV.DictionaryListFromCSVFile(playersFile);
+
+            foreach (var pl in players)
+            {
+                var curPlayer = pl;
+
+                if (curPlayer["IsFA"] == "1")
+                {
+                    curPlayer["CClrYears"] = "0";
+                    curPlayer["COption"] = "0";
+                    curPlayer["CNoTrade"] = "0";
+
+                    for (var i = 1; i < 6; i++)
+                    {
+                        curPlayer["CYear" + i] = "0";
+                    }
+                }
+                else
+                {
+                    for (int i = 1; i <= 6; i++)
+                    {
+                        if (curPlayer["CYear" + i] == "0")
+                        {
+                            for (int j = i + 1; j <= 6; j++)
+                            {
+                                curPlayer["CYear" + j] = "0";
+                            }
+                            curPlayer["CClrYears"] = (i - 1 - yearsInOption(curPlayer["COption"])).ToString();
+                            break;
+                        }
+                    }
+                }
+            }
+
+            CSV.CSVFromDictionaryList(players, playersFile);
+        }
+
+        private static int yearsInOption(string option)
+        {
+            switch (option)
+            {
+                case "0":
+                    return 0;
+                case "1":
+                case "2":
+                    return 1;
+                case "3":
+                    return 2;
+                default:
+                    throw new ArgumentOutOfRangeException("option");
+            }
+        }
+
         //TODO: Calculate Contract Years
-        //TODO: Fix PlNum & Player Order
     }
 }
