@@ -1,9 +1,31 @@
-﻿using System;
+﻿#region Copyright Notice
+
+//    Copyright 2011-2013 Eleftherios Aslanoglou
+// 
+//    Licensed under the Apache License, Version 2.0 (the "License");
+//    you may not use this file except in compliance with the License.
+//    You may obtain a copy of the License at
+// 
+//        http://www.apache.org/licenses/LICENSE-2.0
+// 
+//    Unless required by applicable law or agreed to in writing, software
+//    distributed under the License is distributed on an "AS IS" BASIS,
+//    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//    See the License for the specific language governing permissions and
+//    limitations under the License.
+
+#endregion
+
+#region Using Directives
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Windows;
 using LeftosCommonLibrary;
+
+#endregion
 
 namespace RosterWorkshop
 {
@@ -27,7 +49,7 @@ namespace RosterWorkshop
         {
             var teamsFile = path + REDitorInfo.TeamsCSVName;
             var playersFile = path + REDitorInfo.PlayersCSVName;
-            
+
             if (!File.Exists(teamsFile) || !File.Exists(playersFile))
             {
                 MessageBox.Show("You need both the Players and Teams tab exported to CSV in order to fix Team IDs.");
@@ -64,7 +86,7 @@ namespace RosterWorkshop
                     player["COption"] = "0";
                     player["CNoTrade"] = "0";
 
-                    for (int i = 1; i < 6; i++)
+                    for (var i = 1; i < 6; i++)
                     {
                         player["CYear" + i] = "0";
                     }
@@ -94,7 +116,7 @@ namespace RosterWorkshop
             const int maxASAID = 32767;
             foreach (var pl in players)
             {
-                Dictionary<string, string> curPlayer = pl;
+                var curPlayer = pl;
                 if (seenIDs.Contains(curPlayer["ASA_ID"].ToInt32()))
                 {
                     var newID = getFreeID(takenIDs, maxASAID);
@@ -115,7 +137,7 @@ namespace RosterWorkshop
 
         private static int getFreeID(ICollection<int> list, int maxInclusive)
         {
-            for (int i = 0; i <= maxInclusive; i++)
+            for (var i = 0; i <= maxInclusive; i++)
             {
                 if (!list.Contains(i))
                 {

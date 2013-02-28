@@ -1,4 +1,5 @@
 ﻿#region Copyright Notice
+
 //    Copyright 2011-2013 Eleftherios Aslanoglou
 // 
 //    Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,11 +13,16 @@
 //    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
+
 #endregion
+
+#region Using Directives
 
 using System;
 using System.Windows;
 using Microsoft.Win32;
+
+#endregion
 
 namespace RosterWorkshop
 {
@@ -61,7 +67,7 @@ namespace RosterWorkshop
 
                 rk = rk.OpenSubKey(App.AppRegistryKey);
                 if (rk != null)
-                    settingValue = (T)Convert.ChangeType(rk.GetValue(setting, defaultValue), typeof(T));
+                    settingValue = (T) Convert.ChangeType(rk.GetValue(setting, defaultValue), typeof (T));
             }
             catch
             {
@@ -69,6 +75,6 @@ namespace RosterWorkshop
             }
 
             return settingValue;
-        } 
+        }
     }
 }

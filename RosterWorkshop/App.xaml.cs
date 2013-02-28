@@ -35,10 +35,12 @@ namespace RosterWorkshop
     public partial class App : Application
     {
         internal const string AppName = "Roster Workshop";
+
+        internal const string AppRegistryKey = @"SOFTWARE\Lefteris Aslanoglou\Roster Workshop";
+
         internal static readonly string AppDocsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) +
                                                       @"\Roster Workshop\";
-        internal const string AppRegistryKey = @"SOFTWARE\Lefteris Aslanoglou\Roster Workshop";
-    
+
         private void app_DispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
         {
             var exceptionString = e.Exception.ToString();
@@ -162,13 +164,13 @@ namespace RosterWorkshop
             Trace.Listeners.Clear();
 
             var twtl = new TextWriterTraceListener(AppDocsPath + @"\tracelog.txt")
-            {
-                Name = "TextLogger",
-                TraceOutputOptions =
-                    TraceOptions.ThreadId | TraceOptions.DateTime
-            };
+                       {
+                           Name = "TextLogger",
+                           TraceOutputOptions =
+                               TraceOptions.ThreadId | TraceOptions.DateTime
+                       };
 
-            var ctl = new ConsoleTraceListener(false) { TraceOutputOptions = TraceOptions.DateTime };
+            var ctl = new ConsoleTraceListener(false) {TraceOutputOptions = TraceOptions.DateTime};
 
             Trace.Listeners.Add(twtl);
             Trace.Listeners.Add(ctl);
