@@ -1,0 +1,7 @@
+Add Jerseys handling
+Single team/singe player
+Replace instead of merge
+Make Staff handling optional
+Calculate Contract Years
+Fix PlNum & Player Order
+HS_ID XOR Headshapes, are you sure?
