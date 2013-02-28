@@ -1,0 +1,35 @@
+﻿<Window x:Class="RosterWorkshop.PickTeamPairsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Pick Games" Height="506" Width="680" Loaded="window_Loaded" WindowStartupLocation="CenterScreen">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="5" />
+            <RowDefinition Height="70" />
+            <RowDefinition Height="10" />
+            <RowDefinition Height="30" />
+            <RowDefinition Height="10" />
+            <RowDefinition Height="1*" />
+            <RowDefinition Height="10" />
+            <RowDefinition Height="2*" />
+            <RowDefinition Height="10" />
+            <RowDefinition Height="40" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="20" />
+            <ColumnDefinition />
+            <ColumnDefinition Width="20" />
+            <ColumnDefinition />
+            <ColumnDefinition Width="20" />
+        </Grid.ColumnDefinitions>
+        <TextBlock Grid.ColumnSpan="3" Grid.Column="1" Margin="0,3,0,0" TextWrapping="Wrap" Grid.Row="1">
+            Select pairs of teams, where the team on the left is the base team you're going to replace, and the team on the right is the one you want to replace it with.
+        </TextBlock>
+        <ListBox x:Name="lstTeamsToMerge" Grid.Row="7" Grid.Column="3" />
+        <ListBox x:Name="lstTeamsBase" Grid.Row="7" Grid.Column="1" />
+        <ListBox Name="lstSelectedPairs" Grid.Row="3" Grid.RowSpan="3" Grid.Column="1" Grid.ColumnSpan="3"
+                 MouseDoubleClick="lstSelectedPairs_MouseDoubleClick" />
+        <Button x:Name="btnAddPair" Grid.Row="9" Grid.Column="1" Margin="6" Content="Add Pair" Click="btnAddPair_Click" />
+        <Button Name="btnOK" Grid.Row="9" Grid.Column="3" Margin="6" Content="Done" Click="btnOK_Click" />
+    </Grid>
+</Window>

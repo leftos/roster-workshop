@@ -64,6 +64,9 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="PickTeamPairsWindow.xaml.cs">
+      <DependentUpon>PickTeamPairsWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="REDitorInfo.cs" />
     <Compile Include="RepairTools.cs" />
     <Page Include="ConflictWindow.xaml">
@@ -86,6 +89,10 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="PickTeamPairsWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">

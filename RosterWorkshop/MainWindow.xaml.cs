@@ -296,14 +296,19 @@ namespace RosterWorkshop
             var teamsToMergeDir = "";
             if (doTeams)
             {
-                if (_mergeSettings.Values.Count(dict => dict["Teams"] == true || dict["Teams"] == null) != 1)
+                KeyValuePair<string, Dictionary<string, bool?>> settingsIncludingTeam;
+                try
+                {
+                    settingsIncludingTeam = getSettingsIncludingTeam();
+                }
+                catch
                 {
                     MessageBox.Show("You have selected zero or more than one roster to copy team information from. You must only " +
                                     "select one roster for that for those particular categories.");
                     return;
                 }
 
-                teamsToMergeDir = _mergeSettings.Single(pair => pair.Value["Rosters"] == true).Key;
+                teamsToMergeDir = settingsIncludingTeam.Key;
                 var teamsToMergeFile = teamsToMergeDir + REDitorInfo.TeamsCSVName;
                 if (!File.Exists(teamsBaseFile) || !File.Exists(teamsToMergeFile))
                 {
@@ -312,8 +317,10 @@ namespace RosterWorkshop
                 }
 
                 teamsBase = CSV.DictionaryListFromCSVFile(teamsBaseFile);
+                teamsBase = teamsBase.Where(REDitorInfo.IsValidTeam).ToList();
                 teamsToMerge = CSV.DictionaryListFromCSVFile(teamsToMergeFile);
-
+                teamsToMerge = teamsToMerge.Where(REDitorInfo.IsValidTeam).ToList();
+                
                 if (rbTeamsAll.IsChecked == true && teamsToMerge.Count > teamsBase.Count)
                 {
                     MessageBox.Show(
@@ -433,11 +440,11 @@ namespace RosterWorkshop
                 }
             }
 
-            var validPlayersBase = playersBase.Where(REDitorInfo.isValidPlayer).ToList();
+            var validPlayersBase = playersBase.Where(REDitorInfo.IsValidPlayer).ToList();
             var shouldDoCurrentOnly = rbPlayersCurrent.IsChecked == true;
             if (shouldDoCurrentOnly)
             {
-                validPlayersBase = validPlayersBase.Where(REDitorInfo.isCurrentPlayer).ToList();
+                validPlayersBase = validPlayersBase.Where(REDitorInfo.IsCurrentPlayer).ToList();
             }
             var shouldSkipFA = chkPlayersSkipFA.IsChecked == true;
             if (shouldSkipFA)
@@ -505,9 +512,9 @@ namespace RosterWorkshop
                                   .ToList();
                     if (OnlyShowCurrentMatchesForCurrent)
                     {
-                        if (REDitorInfo.isCurrentPlayer(basePlayer))
+                        if (REDitorInfo.IsCurrentPlayer(basePlayer))
                         {
-                            matching = matching.Where(REDitorInfo.isCurrentPlayer).ToList();
+                            matching = matching.Where(REDitorInfo.IsCurrentPlayer).ToList();
                         }
                     }
                     if (NoConflictForMatchingTeamID)
@@ -534,9 +541,10 @@ namespace RosterWorkshop
                     ConflictResult = 0;
                     if (matching.Count > 1)
                     {
-                        var matchingNice = matching.Select(newPlayer => presentPlayer(newPlayer, teamsCur)).ToList();
+                        var matchingNice = matching.Select(newPlayer => REDitorInfo.PresentPlayer(newPlayer, teamsCur)).ToList();
 
-                        var cw = new ConflictWindow(presentPlayer(basePlayer, teamsBase), matchingNice, ConflictWindow.Mode.Players);
+                        var cw = new ConflictWindow(REDitorInfo.PresentPlayer(basePlayer, teamsBase), matchingNice,
+                                                    ConflictWindow.Mode.Players);
                         cw.ShowDialog();
                     }
                     else if (matching.Count == 0)
@@ -700,10 +708,10 @@ namespace RosterWorkshop
                     #endregion Awards
 
                     #region Merge Player Entry
-                    
+
                     var notPlayerColumns = new List<string> {"Rosters", "Headshape", "Awards", "Staff"};
                     var columnsToMerge = allChecked.Where(prop => !notPlayerColumns.Contains(prop)).ToList();
-                    
+
                     if (allChecked.Contains("Headshape"))
                     {
                         columnsToMerge.Remove("HS_ID");
@@ -744,7 +752,7 @@ namespace RosterWorkshop
                     ConflictResult = 0;
                     if (matchingTeams.Count > 1)
                     {
-                        var cw = new ConflictWindow(presentTeam(newTeam), matchingTeams.Select(presentTeam).ToList(),
+                        var cw = new ConflictWindow(REDitorInfo.PresentTeam(newTeam), matchingTeams.Select(REDitorInfo.PresentTeam).ToList(),
                                                     ConflictWindow.Mode.Teams);
                         cw.ShowDialog();
                     }
@@ -772,9 +780,9 @@ namespace RosterWorkshop
                                             .ToList();
                         if (OnlyShowCurrentMatchesForCurrent)
                         {
-                            if (REDitorInfo.isCurrentPlayer(newPlayer))
+                            if (REDitorInfo.IsCurrentPlayer(newPlayer))
                             {
-                                matchingPlayers = matchingPlayers.Where(REDitorInfo.isCurrentPlayer).ToList();
+                                matchingPlayers = matchingPlayers.Where(REDitorInfo.IsCurrentPlayer).ToList();
                             }
                         }
                         if (NoConflictForMatchingTeamID)
@@ -804,9 +812,9 @@ namespace RosterWorkshop
                         {
                             if (matchingPlayers.Count > 1)
                             {
-                                var cw = new ConflictWindow(presentPlayer(newPlayer, teamsToMerge),
-                                                            matchingPlayers.Select(player => presentPlayer(player, teamsBase)).ToList(),
-                                                            ConflictWindow.Mode.PlayersInDoTeams);
+                                var cw = new ConflictWindow(REDitorInfo.PresentPlayer(newPlayer, teamsToMerge),
+                                                            matchingPlayers.Select(player => REDitorInfo.PresentPlayer(player, teamsBase))
+                                                                           .ToList(), ConflictWindow.Mode.PlayersInDoTeams);
                                 cw.ShowDialog();
 
                                 if (ConflictResult == -2)
@@ -878,8 +886,9 @@ namespace RosterWorkshop
                                                              : matchingStaffByExperience;
                                 if (finalMatchingStaff.Count > 1)
                                 {
-                                    var cw = new ConflictWindow(presentStaff(staffMemberToMerge),
-                                                                finalMatchingStaff.Select(presentStaff).ToList(), ConflictWindow.Mode.Staff);
+                                    var cw = new ConflictWindow(REDitorInfo.PresentStaff(staffMemberToMerge),
+                                                                finalMatchingStaff.Select(REDitorInfo.PresentStaff).ToList(),
+                                                                ConflictWindow.Mode.Staff);
                                     cw.ShowDialog();
 
                                     if (ConflictResult == -2)
@@ -951,7 +960,7 @@ namespace RosterWorkshop
                 }
 
                 var playersBaseNotInRoster =
-                    playersBase.Where(pl => !playerIDsInRosters.Contains(pl["ID"].ToInt32())).Where(REDitorInfo.isValidPlayer).ToList();
+                    playersBase.Where(pl => !playerIDsInRosters.Contains(pl["ID"].ToInt32())).Where(REDitorInfo.IsValidPlayer).ToList();
 
                 foreach (var player in playersBaseNotInRoster)
                 {
@@ -960,7 +969,7 @@ namespace RosterWorkshop
                     player["TeamID2"] = "-1";
                 }
 
-                var faPlayersToMerge = playersToMerge.Where(REDitorInfo.isValidPlayer).Where(REDitorInfo.isFreeAgentPlayer).ToList();
+                var faPlayersToMerge = playersToMerge.Where(REDitorInfo.IsValidPlayer).Where(REDitorInfo.IsFreeAgentPlayer).ToList();
 
                 foreach (var newPlayer in faPlayersToMerge)
                 {
@@ -977,8 +986,8 @@ namespace RosterWorkshop
                     {
                         if (matching.Count > 1)
                         {
-                            var cw = new ConflictWindow(presentPlayer(playerToMerge, teamsToMerge),
-                                                        matching.Select(pl => presentPlayer(pl, teamsBase)).ToList(),
+                            var cw = new ConflictWindow(REDitorInfo.PresentPlayer(playerToMerge, teamsToMerge),
+                                                        matching.Select(pl => REDitorInfo.PresentPlayer(pl, teamsBase)).ToList(),
                                                         ConflictWindow.Mode.PlayersInDoTeams);
                             cw.ShowDialog();
 
@@ -1070,47 +1079,6 @@ namespace RosterWorkshop
             }
         }
 
-        private static string presentStaff(Dictionary<string, string> staff)
-        {
-            return String.Format("{0}: {2} {1} (SType: {3} - Experience: {4} years)", staff["ID"], staff["Last_Name"], staff["First_Name"],
-                                 staff["SType"], staff["Experience"]);
-        }
-
-        private static string presentTeam(Dictionary<string, string> team)
-        {
-            var s = String.Format("{0}: {1} {2}", team["ID"], team["City"], team["Name"]);
-            if (team["Year"] == "0")
-            {
-                s += " (Current)";
-            }
-            else
-            {
-                s += " '" + team["Year"];
-            }
-            return s;
-        }
-
-        private static string presentPlayer(Dictionary<string, string> player, List<Dictionary<string, string>> teams)
-        {
-            var s = String.Format("{0}: {2} {1}", player["ID"], player["Last_Name"], player["First_Name"]);
-            try
-            {
-                var teamName = (player["TeamID1"] != "-1") ? teams.Single(team => team["ID"] == player["TeamID1"])["Name"] : "Free Agent";
-                var isHidden = (player["IsFA"] == "0" && player["TeamID1"] == "-1") ? "Hidden" : "Unhidden";
-                s += string.Format(" ({0}", teamName);
-                if (teamName == "Free Agent")
-                {
-                    s += string.Format(" - {0}", isHidden);
-                }
-                s += ")";
-            }
-            catch (InvalidOperationException)
-            {
-                s += string.Format(" (TeamID: {0})", player["TeamID1"]);
-            }
-            return s;
-        }
-
         private List<string> getAllChecked(Dictionary<string, bool?> dict)
         {
             return dict.Where(pair => pair.Value == true).Select(pair => pair.Key).ToList();
@@ -1176,7 +1144,7 @@ namespace RosterWorkshop
 
             MessageBox.Show("PlNum & player order in team rosters fixed!");
         }
-        
+
         private void mnuRepairFixContracts_Click(object sender, RoutedEventArgs e)
         {
             if (noRoster())
@@ -1186,5 +1154,53 @@ namespace RosterWorkshop
 
             MessageBox.Show("Contract lengths for all players and contract information for free agents fixed!");
         }
+
+        private void rbTeamsCustom_Click(object sender, RoutedEventArgs e)
+        {
+            if (lstRostersToMerge.Items.Count == 0 || String.IsNullOrWhiteSpace(txtRosterBase.Text))
+            {
+                MessageBox.Show("You have to choose a base roster and at least one roster to merge with.");
+                rbTeamsNone.IsChecked = true;
+                return;
+            }
+            saveCurrentMergeSettings(lstRostersToMerge.SelectedItem.ToString());
+
+            KeyValuePair<string, Dictionary<string, bool?>> settings;
+            try
+            {
+                settings = getSettingsIncludingTeam();
+            }
+            catch
+            {
+                rbTeamsNone.IsChecked = true;
+                MessageBox.Show("You haven't selected any roster to copy team information from.");
+                return;
+            }
+            var mergeDir = settings.Key;
+            var baseTeamsFile = txtRosterBase.Text + REDitorInfo.TeamsCSVName;
+            var mergeTeamsFile = mergeDir + REDitorInfo.TeamsCSVName;
+            if (!File.Exists(baseTeamsFile) || !File.Exists(mergeTeamsFile))
+            {
+                MessageBox.Show(
+                    "You need the Teams tab exported both from the base roster and from the roster you've picked to merge team " +
+                    "information from.");
+                rbTeamsNone.IsChecked = true;
+                return;
+            }
+
+            var teamsBase = CSV.DictionaryListFromCSVFile(baseTeamsFile);
+            var teamsToMerge = CSV.DictionaryListFromCSVFile(mergeTeamsFile);
+            var ptpw = new PickTeamPairsWindow(teamsBase.Where(REDitorInfo.IsValidTeam).ToList(),
+                                               teamsToMerge.Where(REDitorInfo.IsValidTeam).ToList());
+            ptpw.ShowDialog();
+        }
+
+        private KeyValuePair<string, Dictionary<string, bool?>> getSettingsIncludingTeam()
+        {
+            var teamOptions = new List<string> {"Rosters", "Staff", "Jerseys"};
+            return _mergeSettings.Single(pair => teamOptions.Any(option => pair.Value[option] == true));
+        }
+
+        public static Dictionary<string, string> TeamPairs = new Dictionary<string, string>();
     }
 }

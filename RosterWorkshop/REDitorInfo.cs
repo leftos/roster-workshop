@@ -18,7 +18,9 @@
 
 #region Using Directives
 
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using LeftosCommonLibrary;
 
 #endregion
@@ -34,12 +36,12 @@ namespace RosterWorkshop
         public const string AwardsCSVName = @"\Awards.csv";
         public const string JerseysCSVName = @"\Jerseys.csv";
 
-        public static bool isFreeAgentPlayer(Dictionary<string, string> player)
+        public static bool IsFreeAgentPlayer(Dictionary<string, string> player)
         {
             return player["IsFA"] == "1" && player["TeamID1"] == "-1" && player["TeamID2"] == "-1";
         }
 
-        public static bool isValidPlayer(Dictionary<string, string> player)
+        public static bool IsValidPlayer(Dictionary<string, string> player)
         {
             if (player["IsRegNBA"] != "1" && player["IsSpecial"] != "1")
                 return false;
@@ -53,9 +55,83 @@ namespace RosterWorkshop
             return true;
         }
 
-        public static bool isCurrentPlayer(Dictionary<string, string> player)
+        public static bool IsCurrentPlayer(Dictionary<string, string> player)
         {
             return player["TeamID1"].ToInt32() < 30;
+        }
+
+        public static string PresentStaff(Dictionary<string, string> staff)
+        {
+            return String.Format("{0}: {2}{1} (SType: {3} - Experience: {4} years)", staff["ID"], staff["Last_Name"],
+                                 !String.IsNullOrWhiteSpace(staff["First_Name"]) ? staff["First_Name"] + " " : "", staff["SType"],
+                                 staff["Experience"]);
+        }
+
+        public static string PresentTeam(Dictionary<string, string> team)
+        {
+            var s = String.Format("{0}: {1}{2}", team["ID"], !String.IsNullOrWhiteSpace(team["City"]) ? team["City"] + " " : "",
+                                  team["Name"]);
+            if (team["Year"] == "0")
+            {
+                s += " (Current)";
+            }
+            else
+            {
+                s += " '" + team["Year"].PadLeft(2, '0');
+            }
+            return s;
+        }
+
+        public static string PresentTeamNicer(Dictionary<string, string> team)
+        {
+            var s = String.Format("{0}{1}", !String.IsNullOrWhiteSpace(team["City"]) ? team["City"] + " " : "", team["Name"]);
+            if (team["Year"] == "0")
+            {
+                s += " (Current)";
+            }
+            else
+            {
+                s += " '" + team["Year"].PadLeft(2, '0');
+            }
+            s += String.Format(" (ID: {0})", team["ID"]);
+            return s;
+        }
+
+        public static string PresentPlayer(Dictionary<string, string> player, IEnumerable<Dictionary<string, string>> teams)
+        {
+            var s = String.Format("{0}: {2}{1}", player["ID"], player["Last_Name"],
+                                  !String.IsNullOrWhiteSpace(player["First_Name"]) ? player["First_Name"] + " " : "");
+            try
+            {
+                var teamName = (player["TeamID1"] != "-1") ? teams.Single(team => team["ID"] == player["TeamID1"])["Name"] : "Free Agent";
+                var isHidden = (player["IsFA"] == "0" && player["TeamID1"] == "-1") ? "Hidden" : "Unhidden";
+                s += String.Format(" ({0}", teamName);
+                if (teamName == "Free Agent")
+                {
+                    s += String.Format(" - {0}", isHidden);
+                }
+                s += ")";
+            }
+            catch (InvalidOperationException)
+            {
+                s += String.Format(" (TeamID: {0})", player["TeamID1"]);
+            }
+            return s;
+        }
+
+        public static bool IsValidTeam(Dictionary<string, string> team)
+        {
+            if (team["Name"].StartsWith("*"))
+            {
+                return false;
+            }
+
+            if (team["TType"] != "0" && team["TType"] != "21")
+            {
+                return false;
+            }
+
+            return true;
         }
     }
 }
