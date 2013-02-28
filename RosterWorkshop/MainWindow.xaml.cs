@@ -962,7 +962,7 @@ namespace RosterWorkshop
 
         private static string presentStaff(Dictionary<string, string> staff)
         {
-            return String.Format("{0}: {1} {2} (SType: {3} - Experience: {4} years)", staff["ID"], staff["Last_Name"], staff["First_Name"],
+            return String.Format("{0}: {2} {1} (SType: {3} - Experience: {4} years)", staff["ID"], staff["Last_Name"], staff["First_Name"],
                                  staff["SType"], staff["Experience"]);
         }
 
@@ -982,13 +982,17 @@ namespace RosterWorkshop
 
         private static string presentPlayer(Dictionary<string, string> player, List<Dictionary<string, string>> teams)
         {
-            string s = String.Format("{0}: {1} {2}", player["ID"], player["Last_Name"], player["First_Name"]);
+            string s = String.Format("{0}: {2} {1}", player["ID"], player["Last_Name"], player["First_Name"]);
             try
             {
                 var teamName = (player["TeamID1"] != "-1") ? teams.Single(team => team["ID"] == player["TeamID1"])["Name"] : "Free Agent";
                 var isHidden = (player["IsFA"] == "0" && player["TeamID1"] == "-1") ? "Hidden" : "Unhidden";
-                s += string.Format(" ({0} - {1})", teamName, isHidden);
-
+                s += string.Format(" ({0}", teamName);
+                if (teamName == "Free Agent")
+                {
+                    s += string.Format(" - {0}", isHidden);
+                }
+                s += ")";
             }
             catch (InvalidOperationException)
             {
