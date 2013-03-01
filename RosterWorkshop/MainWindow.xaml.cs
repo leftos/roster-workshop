@@ -684,20 +684,20 @@ namespace RosterWorkshop
 
                     #region Headshape
 
-                    doHeadshape(headshapesCur, allChecked, freeHeadshapeIDs, pickedPlayer, basePlayer, playersBase, headshapesBase,
+                    doHeadshape(headshapesBase, headshapesCur, ref freeHeadshapeIDs, playersBase, basePlayer, pickedPlayer, allChecked,
                                 ref withError);
 
                     #endregion Headshape
 
                     #region Awards
 
-                    doAwards(awardsCur, pickedPlayer, allChecked, awardsBase, basePlayer, freeAwardIDs, ref withError);
+                    doAwards(awardsBase, awardsCur, ref freeAwardIDs, basePlayer, pickedPlayer, allChecked, ref withError);
 
                     #endregion Awards
 
                     #region Player Stats
 
-                    if (!doPlayerStats(playerStatsBase, allChecked, pickedPlayer, basePlayer, playerStatsToMerge, freePlayerStatsIDs))
+                    if (!doPlayerStats(playerStatsBase, playerStatsToMerge, ref freePlayerStatsIDs, basePlayer, pickedPlayer, allChecked))
                         return;
 
                     #endregion Player Stats
@@ -746,6 +746,8 @@ namespace RosterWorkshop
 
             if (doTeams)
             {
+                var teamIDReplacements = new Dictionary<string, string>();
+
                 var rosterKeys = teamsBase[0].Keys.Where(key => key.StartsWith("Ros_")).ToList();
                 var playerIDsInRosters = new List<int>();
                 var playersToMerge = CSV.DictionaryListFromCSVFile(teamsToMergeDir + REDitorInfo.PlayersCSVName);
@@ -807,16 +809,19 @@ namespace RosterWorkshop
                             }
                         }
 
+                        teamIDReplacements.Add(newTeam["ID"], baseTeam["ID"]);
+
                         #endregion Match Team
 
                         #region Rosters
 
                         if (_mergeSettings.Values.Any(dict => dict["Rosters"] == true))
                         {
-                            if (!doRoster(rosterKeys, newTeam, baseTeam, playersToMerge, validPlayersBase, teamsToMerge, teamsBase,
-                                         playersBase, false, freePlayerIDs, awardsToMerge, awardsBase, freeAwardIDs, headshapesToMerge,
-                                         freeHeadshapeIDs, headshapesBase, playerStatsBase, playerStatsToMerge, freePlayerStatsIDs,
-                                         ref withError))
+                            if (
+                                !doRoster(playersBase, validPlayersBase, playersToMerge, ref freePlayerIDs, teamsBase, teamsToMerge,
+                                          baseTeam, newTeam, false, rosterKeys, awardsBase, awardsToMerge, ref freeAwardIDs, headshapesBase,
+                                          headshapesToMerge, ref freeHeadshapeIDs, playerStatsBase, playerStatsToMerge,
+                                          ref freePlayerStatsIDs, ref withError))
                                 return;
                         }
 
@@ -826,23 +831,33 @@ namespace RosterWorkshop
 
                         if (_mergeSettings.Values.Any(dict => dict["Staff"] == true))
                         {
-                            doStaff(newTeam, staffToMerge, staffBase, false, teamsBase, baseTeam, freeStaffIDs);
+                            doStaff(staffBase, staffToMerge, ref freeStaffIDs, teamsBase, baseTeam, newTeam, false);
                         }
 
                         #endregion Staff
 
                         #region Other
 
-                        if (!doJerseys(teamsToMerge, teamsBase, jerseysBase, baseTeam, jerseysToMerge, newTeam, freeJerseyIDs))
+                        if (!doJerseys(jerseysBase, jerseysToMerge, ref freeJerseyIDs, teamsBase, teamsToMerge, baseTeam, newTeam))
                             return;
 
-                        if (!doRecords(recordsBase, baseTeam, recordsToMerge, newTeam, freeRecordsIDs))
+                        if (!doRecords(recordsBase, recordsToMerge, ref freeRecordsIDs, baseTeam, newTeam))
                             return;
 
-                        if (!doTeamStats(teamStatsBase, baseTeam, teamStatsToMerge, newTeam, freeTeamStatsIDs))
+                        if (!doTeamStats(teamStatsBase, teamStatsToMerge, ref freeTeamStatsIDs, baseTeam, newTeam))
                             return;
 
                         #endregion Other
+                    }
+
+                    var playersBaseNotInRoster =
+                        playersBase.Where(pl => !playerIDsInRosters.Contains(pl["ID"].ToInt32())).Where(REDitorInfo.IsValidPlayer).ToList();
+
+                    foreach (var player in playersBaseNotInRoster)
+                    {
+                        player["IsFA"] = "1";
+                        player["TeamID1"] = "-1";
+                        player["TeamID2"] = "-1";
                     }
                 }
                 else
@@ -866,14 +881,17 @@ namespace RosterWorkshop
                             baseTeam[property] = newTeam[property];
                         }
 
+                        teamIDReplacements.Add(newTeam["ID"], baseTeam["ID"]);
+
                         #region Rosters
 
                         if (_mergeSettings.Values.Any(dict => dict["Rosters"] == true))
                         {
-                            if (!doRoster(rosterKeys, newTeam, baseTeam, playersToMerge, validPlayersBase, teamsToMerge, teamsBase,
-                                         playersBase, true, freePlayerIDs, awardsToMerge, awardsBase, freeAwardIDs, headshapesToMerge,
-                                         freeHeadshapeIDs, headshapesBase, playerStatsBase, playerStatsToMerge, freePlayerStatsIDs,
-                                         ref withError))
+                            if (
+                                !doRoster(playersBase, validPlayersBase, playersToMerge, ref freePlayerIDs, teamsBase, teamsToMerge,
+                                          baseTeam, newTeam, true, rosterKeys, awardsBase, awardsToMerge, ref freeAwardIDs, headshapesBase,
+                                          headshapesToMerge, ref freeHeadshapeIDs, playerStatsBase, playerStatsToMerge,
+                                          ref freePlayerStatsIDs, ref withError))
                                 return;
                         }
 
@@ -883,95 +901,27 @@ namespace RosterWorkshop
 
                         if (_mergeSettings.Values.Any(dict => dict["Staff"] == true))
                         {
-                            doStaff(newTeam, staffToMerge, staffBase, true, teamsBase, baseTeam, freeStaffIDs);
+                            doStaff(staffBase, staffToMerge, ref freeStaffIDs, teamsBase, baseTeam, newTeam, true);
                         }
 
                         #endregion Staff
 
                         #region Jerseys
 
-                        if (!doJerseys(teamsToMerge, teamsBase, jerseysBase, baseTeam, jerseysToMerge, newTeam, freeJerseyIDs))
+                        if (!doJerseys(jerseysBase, jerseysToMerge, ref freeJerseyIDs, teamsBase, teamsToMerge, baseTeam, newTeam))
                             return;
 
-                        if (!doRecords(recordsBase, baseTeam, recordsToMerge, newTeam, freeRecordsIDs))
+                        if (!doRecords(recordsBase, recordsToMerge, ref freeRecordsIDs, baseTeam, newTeam))
                             return;
 
-                        if (!doTeamStats(teamStatsBase, baseTeam, teamStatsToMerge, newTeam, freeTeamStatsIDs))
+                        if (!doTeamStats(teamStatsBase, teamStatsToMerge, ref freeTeamStatsIDs, baseTeam, newTeam))
                             return;
 
                         #endregion Jerseys
                     }
                 }
 
-                if (rbTeamsCustom.IsChecked == false)
-                {
-                    var playersBaseNotInRoster =
-                        playersBase.Where(pl => !playerIDsInRosters.Contains(pl["ID"].ToInt32())).Where(REDitorInfo.IsValidPlayer).ToList();
-
-                    foreach (var player in playersBaseNotInRoster)
-                    {
-                        player["IsFA"] = "1";
-                        player["TeamID1"] = "-1";
-                        player["TeamID2"] = "-1";
-                    }
-                }
-
-                var faPlayersToMerge = playersToMerge.Where(REDitorInfo.IsValidPlayer).Where(REDitorInfo.IsFreeAgentPlayer).ToList();
-
-                foreach (var newPlayer in faPlayersToMerge)
-                {
-                    var playerToMerge = newPlayer;
-                    var matching =
-                        playersBase.Where(
-                            pl =>
-                            pl["Last_Name"] == playerToMerge["Last_Name"] && pl["First_Name"] == playerToMerge["First_Name"] &&
-                            pl["IsFA"] == "1" && pl["TeamID1"] == "-1").ToList();
-
-                    ConflictResult = 0;
-
-                    if (matching.Count >= 1)
-                    {
-                        if (matching.Count > 1)
-                        {
-                            var cw = new ConflictWindow(REDitorInfo.PresentPlayer(playerToMerge, teamsToMerge),
-                                                        matching.Select(pl => REDitorInfo.PresentPlayer(pl, teamsBase)).ToList(),
-                                                        ConflictWindow.Mode.PlayersInDoTeams);
-                            cw.ShowDialog();
-
-                            if (ConflictResult == -2)
-                            {
-                                continue;
-                            }
-                        }
-
-                        var playerToReplace = playersBase.Single(pl => pl["ID"] == matching[ConflictResult]["ID"]);
-                        foreach (var key in playerToReplace.Keys.Where(name => name != "ID").ToList())
-                        {
-                            playerToReplace[key] = playerToMerge[key];
-                        }
-                    }
-                    else
-                    {
-                        if (freePlayerIDs.Count > 0)
-                        {
-                            var freePlayerID = freePlayerIDs.Pop();
-                            var playerToReplace = playersBase.Single(pl => pl["ID"] == freePlayerID.ToString());
-                            foreach (var key in playerToReplace.Keys.Where(name => name != "ID").ToList())
-                            {
-                                playerToReplace[key] = playerToMerge[key];
-                            }
-                            playerToReplace["TeamID1"] = "-1";
-                            playerToReplace["TeamID2"] = "-1";
-                        }
-                        else
-                        {
-                            MessageBox.Show("Not enough space on the base roster to copy all missing Free Agents.\n" +
-                                            "The operation will continue, but some of the Free Agents from the source roster will not" +
-                                            "be in the destination roster.");
-                            break;
-                        }
-                    }
-                }
+                doFreeAgents(playersBase, playersToMerge, ref freePlayerIDs, teamsBase, teamsToMerge);
 
                 CSV.CSVFromDictionaryList(teamsBase, baseDir + REDitorInfo.TeamsCSVName);
                 if (staffBase.Count > 0)
@@ -989,6 +939,14 @@ namespace RosterWorkshop
 
                     CSV.CSVFromDictionaryList(jerseysBase, baseDir + REDitorInfo.JerseysCSVName);
                 }
+                if (recordsBase.Count > 0)
+                {
+                    CSV.CSVFromDictionaryList(recordsBase, baseDir + REDitorInfo.RecordsCSVName);
+                }
+                if (teamStatsBase.Count > 0)
+                {
+                    CSV.CSVFromDictionaryList(teamStatsBase, baseDir + REDitorInfo.TeamStatsCSVName);
+                }
             }
 
             #endregion Do Teams
@@ -1001,6 +959,10 @@ namespace RosterWorkshop
             if (headshapesBase.Count > 0)
             {
                 CSV.CSVFromDictionaryList(headshapesBase, baseDir + REDitorInfo.HeadshapesCSVName);
+            }
+            if (playerStatsBase.Count > 0)
+            {
+                CSV.CSVFromDictionaryList(playerStatsBase, baseDir + REDitorInfo.PlayerStatsCSVName);
             }
 
             if (!withError)
@@ -1015,14 +977,77 @@ namespace RosterWorkshop
             }
         }
 
-        private bool doRoster(List<string> rosterKeys, Dictionary<string, string> newTeam, Dictionary<string, string> baseTeam,
-                              List<Dictionary<string, string>> playersToMerge, List<Dictionary<string, string>> validPlayersBase,
-                              List<Dictionary<string, string>> teamsToMerge, List<Dictionary<string, string>> teamsBase,
-                              List<Dictionary<string, string>> playersBase, bool customTeams, List<int> freePlayerIDs,
-                              List<Dictionary<string, string>> awardsToMerge, List<Dictionary<string, string>> awardsBase,
-                              List<int> freeAwardIDs, List<Dictionary<string, string>> headshapesToMerge, List<int> freeHeadshapeIDs,
-                              List<Dictionary<string, string>> headshapesBase, List<Dictionary<string, string>> playerStatsBase,
-                              List<Dictionary<string, string>> playerStatsToMerge, List<int> freePlayerStatsIDs, ref bool withError)
+        private static void doFreeAgents(List<Dictionary<string, string>> playersBase, List<Dictionary<string, string>> playersToMerge,
+                                         ref List<int> freePlayerIDs, List<Dictionary<string, string>> teamsBase,
+                                         List<Dictionary<string, string>> teamsToMerge)
+        {
+            var faPlayersToMerge = playersToMerge.Where(REDitorInfo.IsValidPlayer).Where(REDitorInfo.IsFreeAgentPlayer).ToList();
+
+            foreach (var newPlayer in faPlayersToMerge)
+            {
+                var playerToMerge = newPlayer;
+                var matching =
+                    playersBase.Where(
+                        pl =>
+                        pl["Last_Name"] == playerToMerge["Last_Name"] && pl["First_Name"] == playerToMerge["First_Name"] &&
+                        pl["IsFA"] == "1" && pl["TeamID1"] == "-1").ToList();
+
+                ConflictResult = 0;
+
+                if (matching.Count >= 1)
+                {
+                    if (matching.Count > 1)
+                    {
+                        var cw = new ConflictWindow(REDitorInfo.PresentPlayer(playerToMerge, teamsToMerge),
+                                                    matching.Select(pl => REDitorInfo.PresentPlayer(pl, teamsBase)).ToList(),
+                                                    ConflictWindow.Mode.PlayersInDoTeams);
+                        cw.ShowDialog();
+
+                        if (ConflictResult == -2)
+                        {
+                            continue;
+                        }
+                    }
+
+                    var playerToReplace = playersBase.Single(pl => pl["ID"] == matching[ConflictResult]["ID"]);
+                    foreach (var key in playerToReplace.Keys.Where(name => name != "ID").ToList())
+                    {
+                        playerToReplace[key] = playerToMerge[key];
+                    }
+                }
+                else
+                {
+                    if (freePlayerIDs.Count > 0)
+                    {
+                        var freePlayerID = freePlayerIDs.Pop();
+                        var playerToReplace = playersBase.Single(pl => pl["ID"] == freePlayerID.ToString());
+                        foreach (var key in playerToReplace.Keys.Where(name => name != "ID").ToList())
+                        {
+                            playerToReplace[key] = playerToMerge[key];
+                        }
+                        playerToReplace["TeamID1"] = "-1";
+                        playerToReplace["TeamID2"] = "-1";
+                    }
+                    else
+                    {
+                        MessageBox.Show("Not enough space on the base roster to copy all missing Free Agents.\n" +
+                                        "The operation will continue, but some of the Free Agents from the source roster will not" +
+                                        "be in the destination roster.");
+                        break;
+                    }
+                }
+            }
+        }
+
+        private bool doRoster(List<Dictionary<string, string>> playersBase, List<Dictionary<string, string>> validPlayersBase,
+                              List<Dictionary<string, string>> playersToMerge, ref List<int> freePlayerIDs,
+                              List<Dictionary<string, string>> teamsBase, List<Dictionary<string, string>> teamsToMerge,
+                              Dictionary<string, string> baseTeam, Dictionary<string, string> newTeam, bool customTeams,
+                              List<string> rosterKeys, List<Dictionary<string, string>> awardsBase,
+                              List<Dictionary<string, string>> awardsToMerge, ref List<int> freeAwardIDs,
+                              List<Dictionary<string, string>> headshapesBase, List<Dictionary<string, string>> headshapesToMerge,
+                              ref List<int> freeHeadshapeIDs, List<Dictionary<string, string>> playerStatsBase,
+                              List<Dictionary<string, string>> playerStatsToMerge, ref List<int> freePlayerStatsIDs, ref bool withError)
         {
             foreach (var rosterSpot in rosterKeys)
             {
@@ -1114,12 +1139,14 @@ namespace RosterWorkshop
                     var playerToReplace = playersBase.Single(player => player["ID"] == freeID.ToString());
 
                     var fullSettings = getAllChecked(getFullSettings());
-                    doAwards(awardsToMerge, newPlayer, fullSettings, awardsBase, playerToReplace, freeAwardIDs, ref withError);
+                    doAwards(awardsBase, awardsToMerge, ref freeAwardIDs, playerToReplace, newPlayer, fullSettings, ref withError);
 
-                    doHeadshape(headshapesToMerge, fullSettings, freeHeadshapeIDs, newPlayer, playerToReplace, playersBase, headshapesBase,
-                                ref withError);
+                    doHeadshape(headshapesBase, headshapesToMerge, ref freeHeadshapeIDs, playersBase, playerToReplace, newPlayer,
+                                fullSettings, ref withError);
 
-                    doPlayerStats(playerStatsBase, fullSettings, newPlayer, playerToReplace, playerStatsToMerge, freePlayerStatsIDs);
+                    updatePlayerStatsTeamIDs(playerToReplace, newPlayer, playerStatsToMerge, newTeam, baseTeam);
+
+                    doPlayerStats(playerStatsBase, playerStatsToMerge, ref freePlayerStatsIDs, playerToReplace, newPlayer, fullSettings);
 
                     foreach (var property in playerToReplace.Keys.Where(key => key != "ID").ToList())
                     {
@@ -1136,9 +1163,9 @@ namespace RosterWorkshop
             return true;
         }
 
-        private static void doStaff(Dictionary<string, string> newTeam, List<Dictionary<string, string>> staffToMerge,
-                                    List<Dictionary<string, string>> staffBase, bool customTeams, List<Dictionary<string, string>> teamsBase,
-                                    Dictionary<string, string> baseTeam, List<int> freeStaffIDs)
+        private static void doStaff(List<Dictionary<string, string>> staffBase, List<Dictionary<string, string>> staffToMerge,
+                                    ref List<int> freeStaffIDs, List<Dictionary<string, string>> teamsBase,
+                                    Dictionary<string, string> baseTeam, Dictionary<string, string> newTeam, bool customTeams)
         {
             var staffKeys = newTeam.Keys.Where(key => key.StartsWith("Staff_")).ToList();
             foreach (var staffSpot in staffKeys)
@@ -1206,7 +1233,7 @@ namespace RosterWorkshop
                 }
             }
         }
-        
+
         private static void updatePlayerStatsTeamIDs(Dictionary<string, string> playerToReplace, Dictionary<string, string> newPlayer,
                                                      List<Dictionary<string, string>> playerStatsToMerge, Dictionary<string, string> newTeam,
                                                      Dictionary<string, string> baseTeam)
@@ -1214,6 +1241,10 @@ namespace RosterWorkshop
             foreach (var playerStatsKey in playerToReplace.Keys.Where(key => key.StartsWith("Stat")))
             {
                 var playerStatsID = newPlayer[playerStatsKey];
+                if (playerStatsID == "-1")
+                {
+                    continue;
+                }
                 var playerStatsEntry = playerStatsToMerge.Single(entry => entry["ID"] == playerStatsID);
                 if (playerStatsEntry["TeamID1"] == newTeam["ID"])
                 {
@@ -1226,9 +1257,10 @@ namespace RosterWorkshop
             }
         }
 
-        private static bool doPlayerStats(List<Dictionary<string, string>> playerStatsBase, List<string> allChecked,
-                                          Dictionary<string, string> pickedPlayer, Dictionary<string, string> basePlayer,
-                                          List<Dictionary<string, string>> playerStatsToMerge, List<int> freePlayerStatsIDs)
+        private static bool doPlayerStats(List<Dictionary<string, string>> playerStatsBase,
+                                          List<Dictionary<string, string>> playerStatsToMerge, ref List<int> freePlayerStatsIDs,
+                                          Dictionary<string, string> basePlayer, Dictionary<string, string> pickedPlayer,
+                                          List<string> allChecked)
         {
             if (playerStatsBase.Count > 0 && allChecked.Contains("Player Stats"))
             {
@@ -1255,7 +1287,8 @@ namespace RosterWorkshop
                             return false;
                         }
 
-                        baseStatEntry = playerStatsBase.Single(entry => entry["ID"] == freePlayerStatsIDs.Pop().ToString());
+                        List<int> freeIDs = freePlayerStatsIDs;
+                        baseStatEntry = playerStatsBase.Single(entry => entry["ID"] == freeIDs.Pop().ToString());
                     }
 
                     foreach (var key in baseStatEntry.Keys.Where(key => key != "ID"))
@@ -1269,11 +1302,12 @@ namespace RosterWorkshop
             return true;
         }
 
-        private void doAwards(List<Dictionary<string, string>> awardsCur, Dictionary<string, string> pickedPlayer, List<string> allChecked,
-                              List<Dictionary<string, string>> awardsBase, Dictionary<string, string> basePlayer, List<int> freeAwardIDs,
-                              ref bool withError)
+        private void doAwards(List<Dictionary<string, string>> awardsBase, List<Dictionary<string, string>> awardsCur,
+                              ref List<int> freeAwardIDs, Dictionary<string, string> basePlayer, Dictionary<string, string> pickedPlayer,
+                              List<string> allChecked, ref bool withError)
         {
-            if (awardsCur.Count > 0 && awardsCur.Any(award => award["Pl_ASA_ID"] == pickedPlayer["ASA_ID"]) && allChecked.Contains("Awards"))
+            if (awardsBase.Count > 0 && awardsCur.Count > 0 && awardsCur.Any(award => award["Pl_ASA_ID"] == pickedPlayer["ASA_ID"]) &&
+                allChecked.Contains("Awards"))
             {
                 var pickedAwards = awardsCur.Where(award => award["Pl_ASA_ID"] == pickedPlayer["ASA_ID"]).ToList();
                 var basePlayerAwards = awardsBase.Where(award => award["Pl_ASA_ID"] == basePlayer["ASA_ID"]).ToList();
@@ -1318,12 +1352,12 @@ namespace RosterWorkshop
             }
         }
 
-        private static void doHeadshape(List<Dictionary<string, string>> headshapesCur, List<string> allChecked, List<int> freeHeadshapeIDs,
-                                        Dictionary<string, string> pickedPlayer, Dictionary<string, string> basePlayer,
-                                        List<Dictionary<string, string>> playersBase, List<Dictionary<string, string>> headshapesBase,
-                                        ref bool withError)
+        private static void doHeadshape(List<Dictionary<string, string>> headshapesBase, List<Dictionary<string, string>> headshapesCur,
+                                        ref List<int> freeHeadshapeIDs, List<Dictionary<string, string>> playersBase,
+                                        Dictionary<string, string> basePlayer, Dictionary<string, string> pickedPlayer,
+                                        List<string> allChecked, ref bool withError)
         {
-            if (headshapesCur.Count > 0 && allChecked.Contains("Headshape"))
+            if (headshapesBase.Count > 0 && headshapesCur.Count > 0 && allChecked.Contains("Headshape"))
             {
                 Dictionary<string, string> baseHS = null;
                 if (allChecked.Contains("HS_ID"))
@@ -1416,9 +1450,8 @@ namespace RosterWorkshop
             }
         }
 
-        private bool doTeamStats(List<Dictionary<string, string>> teamStatsBase, Dictionary<string, string> baseTeam,
-                                 List<Dictionary<string, string>> teamStatsToMerge, Dictionary<string, string> newTeam,
-                                 List<int> freeTeamStatsIDs)
+        private bool doTeamStats(List<Dictionary<string, string>> teamStatsBase, List<Dictionary<string, string>> teamStatsToMerge,
+                                 ref List<int> freeTeamStatsIDs, Dictionary<string, string> baseTeam, Dictionary<string, string> newTeam)
         {
             if (_mergeSettings.Values.Any(dict => dict["TeamStats"] == true))
             {
@@ -1443,7 +1476,8 @@ namespace RosterWorkshop
 
                     if (freeTeamStatsIDs.Count > 0)
                     {
-                        var teamStatToReplace = teamStatsBase.Single(entry => entry["ID"] == freeTeamStatsIDs.Pop().ToString());
+                        List<int> freeIDs = freeTeamStatsIDs;
+                        var teamStatToReplace = teamStatsBase.Single(entry => entry["ID"] == freeIDs.Pop().ToString());
                         var teamStatToMerge = teamStatsToMerge.Single(entry => entry["ID"] == newTeam[teamStatKey]);
                         foreach (var key in teamStatToMerge.Keys.Where(key => key != "ID"))
                         {
@@ -1462,8 +1496,8 @@ namespace RosterWorkshop
             return true;
         }
 
-        private bool doRecords(List<Dictionary<string, string>> recordsBase, Dictionary<string, string> baseTeam,
-                               List<Dictionary<string, string>> recordsToMerge, Dictionary<string, string> newTeam, List<int> freeRecordsIDs)
+        private bool doRecords(List<Dictionary<string, string>> recordsBase, List<Dictionary<string, string>> recordsToMerge,
+                               ref List<int> freeRecordsIDs, Dictionary<string, string> baseTeam, Dictionary<string, string> newTeam)
         {
             if (_mergeSettings.Values.Any(dict => dict["Records"] == true))
             {
@@ -1488,7 +1522,8 @@ namespace RosterWorkshop
 
                     if (freeRecordsIDs.Count > 0)
                     {
-                        var recordToReplace = recordsBase.Single(entry => entry["ID"] == freeRecordsIDs.Pop().ToString());
+                        List<int> freeIDs = freeRecordsIDs;
+                        var recordToReplace = recordsBase.Single(entry => entry["ID"] == freeIDs.Pop().ToString());
                         var recordToMerge = recordsToMerge.Single(entry => entry["ID"] == newTeam[recordKey]);
                         foreach (var key in recordToMerge.Keys.Where(key => key != "ID"))
                         {
@@ -1507,9 +1542,10 @@ namespace RosterWorkshop
             return true;
         }
 
-        private bool doJerseys(List<Dictionary<string, string>> teamsToMerge, List<Dictionary<string, string>> teamsBase,
-                               List<Dictionary<string, string>> jerseysBase, Dictionary<string, string> baseTeam,
-                               List<Dictionary<string, string>> jerseysToMerge, Dictionary<string, string> newTeam, List<int> freeJerseyIDs)
+        private bool doJerseys(List<Dictionary<string, string>> jerseysBase, List<Dictionary<string, string>> jerseysToMerge,
+                               ref List<int> freeJerseyIDs, List<Dictionary<string, string>> teamsBase,
+                               List<Dictionary<string, string>> teamsToMerge, Dictionary<string, string> baseTeam,
+                               Dictionary<string, string> newTeam)
         {
             if (_mergeSettings.Values.Any(dict => dict["Jerseys"] == true))
             {
