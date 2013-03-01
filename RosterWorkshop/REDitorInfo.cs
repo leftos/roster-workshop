@@ -29,6 +29,9 @@ namespace RosterWorkshop
 {
     public static class REDitorInfo
     {
+        public const string RecordsCSVName = @"\Records.csv";
+        public const string PlayerStatsCSVName = @"\PlayerStats.csv";
+        public const string TeamStatsCSVName = @"\TeamStats.csv";
         public const string TeamsCSVName = @"\Teams.csv";
         public const string StaffCSVName = @"\Staff.csv";
         public const string PlayersCSVName = @"\Players.csv";

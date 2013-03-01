@@ -3,3 +3,5 @@ Single team/singe player
 Replace instead of merge
 Make Staff handling optional
 HS_ID XOR Headshapes, are you sure?
+
+Arenas

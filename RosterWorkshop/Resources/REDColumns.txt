@@ -394,7 +394,10 @@ Players
 		GShsACol3
 	Headshape
 	Awards
+	Player Stats
 Teams
 	Rosters
 	Staff
 	Jerseys
+	Records
+	Team Stats
