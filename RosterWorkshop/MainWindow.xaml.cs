@@ -469,7 +469,7 @@ namespace RosterWorkshop
                         teamsBase.SelectMany(
                             team => team.Keys.Where(key => key.StartsWith("Stat")).Select(key => team[key].ToInt32()).ToList()).ToList();
                     freeTeamStatsIDs = teamStatsBase.Select(st => st["ID"].ToInt32()).Where(id => !usedTeamStatsIDs.Contains(id)).ToList();
-                    teamStatsToMerge = CSV.DictionaryListFromCSVFile(teamsToMergeDir + REDitorInfo.TeamsCSVName);
+                    teamStatsToMerge = CSV.DictionaryListFromCSVFile(teamsToMergeDir + REDitorInfo.TeamStatsCSVName);
                 }
             }
             else
@@ -1287,11 +1287,11 @@ namespace RosterWorkshop
                             return false;
                         }
 
-                        List<int> freeIDs = freePlayerStatsIDs;
-                        baseStatEntry = playerStatsBase.Single(entry => entry["ID"] == freeIDs.Pop().ToString());
+                        var freeID = freePlayerStatsIDs.Pop();
+                        baseStatEntry = playerStatsBase.Single(entry => entry["ID"] == freeID.ToString());
                     }
 
-                    foreach (var key in baseStatEntry.Keys.Where(key => key != "ID"))
+                    foreach (var key in playerStatsBase[0].Keys.Where(key => key != "ID"))
                     {
                         baseStatEntry[key] = newStatEntry[key];
                     }
@@ -1453,7 +1453,7 @@ namespace RosterWorkshop
         private bool doTeamStats(List<Dictionary<string, string>> teamStatsBase, List<Dictionary<string, string>> teamStatsToMerge,
                                  ref List<int> freeTeamStatsIDs, Dictionary<string, string> baseTeam, Dictionary<string, string> newTeam)
         {
-            if (_mergeSettings.Values.Any(dict => dict["TeamStats"] == true))
+            if (_mergeSettings.Values.Any(dict => dict["Team Stats"] == true))
             {
                 var teamStatKeys = baseTeam.Keys.Where(key => key.StartsWith("Stat")).ToList();
                 foreach (var teamStatKey in teamStatKeys)
@@ -1476,8 +1476,8 @@ namespace RosterWorkshop
 
                     if (freeTeamStatsIDs.Count > 0)
                     {
-                        List<int> freeIDs = freeTeamStatsIDs;
-                        var teamStatToReplace = teamStatsBase.Single(entry => entry["ID"] == freeIDs.Pop().ToString());
+                        var freeID = freeTeamStatsIDs.Pop();
+                        var teamStatToReplace = teamStatsBase.Single(entry => entry["ID"] == freeID.ToString());
                         var teamStatToMerge = teamStatsToMerge.Single(entry => entry["ID"] == newTeam[teamStatKey]);
                         foreach (var key in teamStatToMerge.Keys.Where(key => key != "ID"))
                         {
@@ -1522,8 +1522,8 @@ namespace RosterWorkshop
 
                     if (freeRecordsIDs.Count > 0)
                     {
-                        List<int> freeIDs = freeRecordsIDs;
-                        var recordToReplace = recordsBase.Single(entry => entry["ID"] == freeIDs.Pop().ToString());
+                        var freeID = freeRecordsIDs.Pop();
+                        var recordToReplace = recordsBase.Single(entry => entry["ID"] == freeID.ToString());
                         var recordToMerge = recordsToMerge.Single(entry => entry["ID"] == newTeam[recordKey]);
                         foreach (var key in recordToMerge.Keys.Where(key => key != "ID"))
                         {
