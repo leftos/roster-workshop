@@ -313,6 +313,8 @@ namespace RosterWorkshop
 
             var doTeams = rbTeamsNone.IsChecked != true;
 
+            #region Check Files and Initialize
+
             var teamsToMerge = new List<Dictionary<string, string>>();
             var teamsBase = new List<Dictionary<string, string>>();
             var freeTeamIDs = new List<string>();
@@ -560,6 +562,8 @@ namespace RosterWorkshop
                         playerStatsBase.Select(st => st["ID"].ToInt32()).Where(id => !usedPlayerStatsIDs.Contains(id)).ToList();
                 }
             }
+
+            #endregion Check Files and Initialize
 
             var validPlayersBase = playersBase.Where(REDitorInfo.IsValidPlayer).ToList();
             var shouldDoCurrentOnly = rbPlayersCurrent.IsChecked == true;
