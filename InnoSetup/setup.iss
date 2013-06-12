@@ -60,7 +60,7 @@ AppPublisher=Lefteris Aslanoglou
 OutputBaseFilename={#MyAppSetupName} {#MyAppVersion} {#MyAppVerInfo}
 DefaultGroupName={#MyAppSetupName}
 DefaultDirName={code:GetDefaultDir}
-UninstallDisplayIcon={app}\Roster Workshop.exe
+UninstallDisplayIcon={app}\RosterWorkshop.exe
 UninstallDisplayName={#MyAppSetupName}
 Uninstallable=true
 DirExistsWarning=no
@@ -101,7 +101,7 @@ Name: "{commondesktop}\Roster Workshop"; Filename: "{app}\RosterWorkshop.exe"; W
 Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\Roster Workshop"; Filename: "{app}\RosterWorkshop.exe"; WorkingDir: "{app}"; IconFilename: "{app}\RosterWorkshop.exe"; Tasks: quicklaunchicon
 
 [Run]
-Filename: "{app}\Roster Workshop.exe"; WorkingDir: "{app}"; Flags: nowait postinstall runascurrentuser skipifsilent; Description: "{cm:LaunchProgram,Roster Workshop}"
+Filename: "{app}\RosterWorkshop.exe"; WorkingDir: "{app}"; Flags: nowait postinstall runascurrentuser skipifsilent; Description: "{cm:LaunchProgram,Roster Workshop}"
 
 [UninstallDelete]
 Type: filesandordirs; Name: "{app}"
