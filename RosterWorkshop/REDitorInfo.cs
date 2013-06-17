@@ -18,15 +18,22 @@
 
 #region Using Directives
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using LeftosCommonLibrary;
+
 
 #endregion
 
 namespace RosterWorkshop
 {
+    #region Using Directives
+
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+
+    using LeftosCommonLibrary;
+
+    #endregion
+
     public static class REDitorInfo
     {
         public const string RecordsCSVName = @"\Records.csv";
@@ -47,13 +54,19 @@ namespace RosterWorkshop
         public static bool IsValidPlayer(Dictionary<string, string> player)
         {
             if (player["IsRegNBA"] != "1" && player["IsSpecial"] != "1")
+            {
                 return false;
+            }
 
             if (player["Last_Name"].StartsWith("*"))
+            {
                 return false;
+            }
 
             if (player["IsFA"] == "1" && player["TeamID1"] != "-1")
+            {
                 return false;
+            }
 
             return true;
         }
@@ -65,15 +78,19 @@ namespace RosterWorkshop
 
         public static string PresentStaff(Dictionary<string, string> staff)
         {
-            return String.Format("{0}: {2}{1} (SType: {3} - Experience: {4} years)", staff["ID"], staff["Last_Name"],
-                                 !String.IsNullOrWhiteSpace(staff["First_Name"]) ? staff["First_Name"] + " " : "", staff["SType"],
-                                 staff["Experience"]);
+            return String.Format(
+                "{0}: {2}{1} (SType: {3} - Experience: {4} years)",
+                staff["ID"],
+                staff["Last_Name"],
+                !String.IsNullOrWhiteSpace(staff["First_Name"]) ? staff["First_Name"] + " " : "",
+                staff["SType"],
+                staff["Experience"]);
         }
 
         public static string PresentTeam(Dictionary<string, string> team)
         {
-            var s = String.Format("{0}: {1}{2}", team["ID"], !String.IsNullOrWhiteSpace(team["City"]) ? team["City"] + " " : "",
-                                  team["Name"]);
+            var s = String.Format(
+                "{0}: {1}{2}", team["ID"], !String.IsNullOrWhiteSpace(team["City"]) ? team["City"] + " " : "", team["Name"]);
             if (team["Year"] == "0")
             {
                 s += " (Current)";
@@ -102,11 +119,16 @@ namespace RosterWorkshop
 
         public static string PresentPlayer(Dictionary<string, string> player, IEnumerable<Dictionary<string, string>> teams)
         {
-            var s = String.Format("{0}: {2}{1}", player["ID"], player["Last_Name"],
-                                  !String.IsNullOrWhiteSpace(player["First_Name"]) ? player["First_Name"] + " " : "");
+            var s = String.Format(
+                "{0}: {2}{1}",
+                player["ID"],
+                player["Last_Name"],
+                !String.IsNullOrWhiteSpace(player["First_Name"]) ? player["First_Name"] + " " : "");
             try
             {
-                var teamName = (player["TeamID1"] != "-1") ? teams.Single(team => team["ID"] == player["TeamID1"])["Name"] : "Free Agent";
+                var teamName = (player["TeamID1"] != "-1")
+                                   ? teams.Single(team => team["ID"] == player["TeamID1"])["Name"]
+                                   : "Free Agent";
                 var isHidden = (player["IsFA"] == "0" && player["TeamID1"] == "-1") ? "Hidden" : "Unhidden";
                 s += String.Format(" ({0}", teamName);
                 if (teamName == "Free Agent")

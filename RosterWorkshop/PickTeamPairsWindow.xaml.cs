@@ -18,20 +18,24 @@
 
 #region Using Directives
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Media;
-using System.Windows;
-using System.Windows.Input;
+
 
 #endregion
 
 namespace RosterWorkshop
 {
-    /// <summary>
-    ///     Interaction logic for PickGamesWindow.xaml
-    /// </summary>
+    #region Using Directives
+
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Media;
+    using System.Windows;
+    using System.Windows.Input;
+
+    #endregion
+
+    /// <summary>Interaction logic for PickGamesWindow.xaml</summary>
     public partial class PickTeamPairsWindow : Window
     {
         private readonly List<Dictionary<string, string>> _teamsBase;
@@ -42,7 +46,8 @@ namespace RosterWorkshop
             InitializeComponent();
         }
 
-        public PickTeamPairsWindow(List<Dictionary<string, string>> teamsBase, List<Dictionary<string,string>> teamsToMerge) : this()
+        public PickTeamPairsWindow(List<Dictionary<string, string>> teamsBase, List<Dictionary<string, string>> teamsToMerge)
+            : this()
         {
             _teamsBase = teamsBase;
             _teamsToMerge = teamsToMerge;
@@ -81,9 +86,11 @@ namespace RosterWorkshop
         {
             if (lstSelectedPairs.SelectedItems.Count == 1)
             {
-                if (MessageBox.Show("Are you sure you want to remove \"" + lstSelectedPairs.SelectedItem + "\"?") == MessageBoxResult.Yes)
+                if (MessageBox.Show("Are you sure you want to remove \"" + lstSelectedPairs.SelectedItem + "\"?")
+                    == MessageBoxResult.Yes)
                 {
-                    var parts = lstSelectedPairs.SelectedItem.ToString().Split(new[] {" to be replaced by "}, StringSplitOptions.None);
+                    var parts = lstSelectedPairs.SelectedItem.ToString()
+                                                .Split(new[] { " to be replaced by " }, StringSplitOptions.None);
                     lstSelectedPairs.Items.Remove(lstSelectedPairs.SelectedItem);
                     foreach (var part in parts)
                     {

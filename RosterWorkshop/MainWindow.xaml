@@ -2,7 +2,8 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:dw="clr-namespace:TreeViewWithCheckBoxesLib;assembly=TreeViewWithCheckBoxesLib"
-        Title="Roster Workshop" Height="532" Width="525" MinHeight="340" MinWidth="447" Icon="NLSC.ico" Loaded="Window_Loaded"
+        Title="Roster Workshop" Height="532" Width="525" MinHeight="340" MinWidth="447" Icon="NLSC.ico"
+        Loaded="Window_Loaded"
         Initialized="Window_Initialized" Closing="Window_Closing">
     <Window.Resources>
         <ResourceDictionary>
@@ -71,7 +72,8 @@
                     <RadioButton x:Name="rbTeamsCustom" Content="Custom" Margin="3" Click="rbTeamsCustom_Click" />
                 </StackPanel>
             </GroupBox>
-            <GroupBox Header="Players" HorizontalAlignment="Left" Margin="104,5,0,0" Height="68" VerticalAlignment="Top">
+            <GroupBox Header="Players" HorizontalAlignment="Left" Margin="104,5,0,0" Height="68"
+                      VerticalAlignment="Top">
                 <StackPanel>
                     <RadioButton x:Name="rbPlayersCurrent" Content="Current" Margin="3" />
                     <RadioButton x:Name="rbPlayersAll" Content="All" Margin="3" />
@@ -87,8 +89,10 @@
                                   Click="mnuRepairFixTeamIDs_Click" />
                         <MenuItem Header="Fix ASA_IDs" Name="mnuRepairFixASAIDs" Click="mnuRepairFixASAIDs_Click" />
                         <MenuItem Header="Fix CSV Sorting" Name="mnuRepairFixSorting" Click="mnuRepairFixSorting_Click" />
-                        <MenuItem Header="Fix PlNum and Player Order in Team Rosters" Name="mnuRepairFixPlNum" Click="mnuRepairFixPlNum_Click" />
-                        <MenuItem Header="Fix Contract Lengths and FA Contract Information" Name="mnuRepairFixContracts" Click="mnuRepairFixContracts_Click" />
+                        <MenuItem Header="Fix PlNum and Player Order in Team Rosters" Name="mnuRepairFixPlNum"
+                                  Click="mnuRepairFixPlNum_Click" />
+                        <MenuItem Header="Fix Contract Lengths and FA Contract Information"
+                                  Name="mnuRepairFixContracts" Click="mnuRepairFixContracts_Click" />
                     </ContextMenu>
                 </Button.ContextMenu>
             </Button>

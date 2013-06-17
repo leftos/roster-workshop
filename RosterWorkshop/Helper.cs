@@ -18,14 +18,21 @@
 
 #region Using Directives
 
-using System;
-using System.Windows;
-using Microsoft.Win32;
+
 
 #endregion
 
 namespace RosterWorkshop
 {
+    #region Using Directives
+
+    using System;
+    using System.Windows;
+
+    using Microsoft.Win32;
+
+    #endregion
+
     public static class Helper
     {
         public static void SetRegistrySetting<T>(string setting, T value)
@@ -37,7 +44,9 @@ namespace RosterWorkshop
                 {
                     rk = rk.OpenSubKey(App.AppRegistryKey, true);
                     if (rk == null)
+                    {
                         throw new Exception();
+                    }
                 }
                 catch (Exception)
                 {
@@ -45,7 +54,9 @@ namespace RosterWorkshop
                     rk.CreateSubKey(App.AppRegistryKey);
                     rk = rk.OpenSubKey(App.AppRegistryKey, true);
                     if (rk == null)
+                    {
                         throw new Exception();
+                    }
                 }
 
                 rk.SetValue(setting, value);
@@ -63,11 +74,15 @@ namespace RosterWorkshop
             try
             {
                 if (rk == null)
+                {
                     throw new Exception();
+                }
 
                 rk = rk.OpenSubKey(App.AppRegistryKey);
                 if (rk != null)
-                    settingValue = (T) Convert.ChangeType(rk.GetValue(setting, defaultValue), typeof (T));
+                {
+                    settingValue = (T) Convert.ChangeType(rk.GetValue(setting, defaultValue), typeof(T));
+                }
             }
             catch
             {

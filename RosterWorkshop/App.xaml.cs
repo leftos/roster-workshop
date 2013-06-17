@@ -18,28 +18,32 @@
 
 #region Using Directives
 
-using System;
-using System.Diagnostics;
-using System.IO;
-using System.Reflection;
-using System.Windows;
-using System.Windows.Threading;
+
 
 #endregion
 
 namespace RosterWorkshop
 {
-    /// <summary>
-    ///     Interaction logic for App.xaml
-    /// </summary>
+    #region Using Directives
+
+    using System;
+    using System.Diagnostics;
+    using System.IO;
+    using System.Reflection;
+    using System.Windows;
+    using System.Windows.Threading;
+
+    #endregion
+
+    /// <summary>Interaction logic for App.xaml</summary>
     public partial class App : Application
     {
         internal const string AppName = "Roster Workshop";
 
         internal const string AppRegistryKey = @"SOFTWARE\Lefteris Aslanoglou\Roster Workshop";
 
-        internal static readonly string AppDocsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) +
-                                                      @"\Roster Workshop\";
+        internal static readonly string AppDocsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)
+                                                      + @"\Roster Workshop\";
 
         private void app_DispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
         {
@@ -66,8 +70,11 @@ namespace RosterWorkshop
                 f.Close();
 
                 MessageBox.Show(
-                    AppName + " encountered a critical error and will be terminated.\n\n" + "An Error Log has been saved at \n" +
-                    errorReportPath, AppName + " Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    AppName + " encountered a critical error and will be terminated.\n\n" + "An Error Log has been saved at \n"
+                    + errorReportPath,
+                    AppName + " Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
 
                 Process.Start(errorReportPath);
             }
@@ -88,9 +95,7 @@ namespace RosterWorkshop
             Environment.Exit(-1);
         }
 
-        /// <summary>
-        ///     Forces a critical error to happen and produces an error-report which includes the stack trace.
-        /// </summary>
+        /// <summary>Forces a critical error to happen and produces an error-report which includes the stack trace.</summary>
         /// <param name="e">The e.</param>
         /// <param name="additional">The additional.</param>
         public static void ErrorReport(Exception e, string additional = "")
@@ -117,8 +122,11 @@ namespace RosterWorkshop
                 f.Close();
 
                 MessageBox.Show(
-                    AppName + " encountered a critical error and will be terminated.\n\n" + "An Error Log has been saved at \n" +
-                    errorReportPath, AppName + " Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    AppName + " encountered a critical error and will be terminated.\n\n" + "An Error Log has been saved at \n"
+                    + errorReportPath,
+                    AppName + " Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
 
                 Process.Start(errorReportPath);
             }
@@ -164,13 +172,12 @@ namespace RosterWorkshop
             Trace.Listeners.Clear();
 
             var twtl = new TextWriterTraceListener(AppDocsPath + @"\tracelog.txt")
-                       {
-                           Name = "TextLogger",
-                           TraceOutputOptions =
-                               TraceOptions.ThreadId | TraceOptions.DateTime
-                       };
+                {
+                    Name = "TextLogger",
+                    TraceOutputOptions = TraceOptions.ThreadId | TraceOptions.DateTime
+                };
 
-            var ctl = new ConsoleTraceListener(false) {TraceOutputOptions = TraceOptions.DateTime};
+            var ctl = new ConsoleTraceListener(false) { TraceOutputOptions = TraceOptions.DateTime };
 
             Trace.Listeners.Add(twtl);
             Trace.Listeners.Add(ctl);

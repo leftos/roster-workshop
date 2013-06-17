@@ -18,18 +18,22 @@
 
 #region Using Directives
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Windows;
+
 
 #endregion
 
 namespace RosterWorkshop
 {
-    /// <summary>
-    ///     Interaction logic for ConflictWindow.xaml
-    /// </summary>
+    #region Using Directives
+
+    using System;
+    using System.Collections.Generic;
+    using System.ComponentModel;
+    using System.Windows;
+
+    #endregion
+
+    /// <summary>Interaction logic for ConflictWindow.xaml</summary>
     public partial class ConflictWindow : Window
     {
         #region Mode enum
@@ -49,7 +53,8 @@ namespace RosterWorkshop
             InitializeComponent();
         }
 
-        public ConflictWindow(string current, List<string> matching, Mode mode) : this()
+        public ConflictWindow(string current, List<string> matching, Mode mode)
+            : this()
         {
             switch (mode)
             {
@@ -85,7 +90,9 @@ namespace RosterWorkshop
         private void btnOK_Click(object sender, RoutedEventArgs e)
         {
             if (lstMatches.SelectedIndex == -1)
+            {
                 return;
+            }
 
             MainWindow.ConflictResult = lstMatches.SelectedIndex;
             Close();

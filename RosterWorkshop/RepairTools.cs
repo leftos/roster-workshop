@@ -18,17 +18,24 @@
 
 #region Using Directives
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Windows;
-using LeftosCommonLibrary;
+
 
 #endregion
 
 namespace RosterWorkshop
 {
+    #region Using Directives
+
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using System.Windows;
+
+    using LeftosCommonLibrary;
+
+    #endregion
+
     internal static class RepairTools
     {
         public static void FixSorting(string path)
@@ -63,7 +70,9 @@ namespace RosterWorkshop
                 teams.Where(team => team["TType"] == "0" || team["TType"] == "21")
                      .SelectMany(
                          team =>
-                         team.Keys.Where(key => key.StartsWith("Ros_")).Select(key => team[key]).ToDictionary(id => id, id => team["ID"]))
+                         team.Keys.Where(key => key.StartsWith("Ros_"))
+                             .Select(key => team[key])
+                             .ToDictionary(id => id, id => team["ID"]))
                      .ToDictionary(o => o.Key, o => o.Value);
             foreach (var player in players)
             {
@@ -163,13 +172,13 @@ namespace RosterWorkshop
             {
                 var curTeam = team;
                 var rosterKeys = curTeam.Keys.Where(key => key.StartsWith("Ros_")).ToList();
-                for (int i = 0; i < rosterKeys.Count; i++)
+                for (var i = 0; i < rosterKeys.Count; i++)
                 {
                     var key = rosterKeys[i];
                     var curID = curTeam[key];
                     if (curID == "-1")
                     {
-                        for (int j = rosterKeys.Count - 1; j > i; j--)
+                        for (var j = rosterKeys.Count - 1; j > i; j--)
                         {
                             var newKey = rosterKeys[j];
                             var newID = curTeam[newKey];
@@ -217,11 +226,11 @@ namespace RosterWorkshop
                 }
                 else
                 {
-                    for (int i = 1; i <= 6; i++)
+                    for (var i = 1; i <= 6; i++)
                     {
                         if (curPlayer["CYear" + i] == "0")
                         {
-                            for (int j = i + 1; j <= 6; j++)
+                            for (var j = i + 1; j <= 6; j++)
                             {
                                 curPlayer["CYear" + j] = "0";
                             }
