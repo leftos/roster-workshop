@@ -16,12 +16,6 @@
 
 #endregion
 
-#region Using Directives
-
-
-
-#endregion
-
 namespace RosterWorkshop
 {
     #region Using Directives
@@ -30,8 +24,10 @@ namespace RosterWorkshop
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.ComponentModel;
+    using System.Diagnostics;
     using System.IO;
     using System.Linq;
+    using System.Net;
     using System.Reflection;
     using System.Windows;
     using System.Windows.Controls;
@@ -52,6 +48,7 @@ namespace RosterWorkshop
         public static bool PreferUnhidden;
         public static int ConflictResult;
         public static Dictionary<string, string> TeamPairs = new Dictionary<string, string>();
+        private static readonly string UpdateFileLocalPath = App.AppDocsPath + @"rwversion.txt";
 
         private readonly Dictionary<string, Dictionary<string, bool?>> _mergeSettings =
             new Dictionary<string, Dictionary<string, bool?>>();
@@ -71,6 +68,9 @@ namespace RosterWorkshop
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            var w = new BackgroundWorker();
+            w.DoWork += (o, args) => CheckForUpdates();
+            w.RunWorkerAsync();
         }
 
         private void Window_Initialized(object sender, EventArgs e)
@@ -123,6 +123,92 @@ namespace RosterWorkshop
             lstRostersToMerge.ItemsSource = rostersToMerge;
 
             Title += " v" + Assembly.GetExecutingAssembly().GetName().Version + " - by Lefteris \"Leftos\" Aslanoglou";
+        }
+
+        /// <summary>Checks for software updates asynchronously.</summary>
+        /// <param name="showMessage">
+        ///     if set to <c>true</c>, a message will be shown even if no update is found.
+        /// </param>
+        public static void CheckForUpdates(bool showMessage = false)
+        {
+            //showUpdateMessage = showMessage;
+            try
+            {
+                var webClient = new WebClient();
+                const string UpdateUri = "http://www.nba-live.com/leftos/rwversion.txt";
+                if (!showMessage)
+                {
+                    webClient.DownloadFileCompleted += checkForUpdatesCompleted;
+                    webClient.DownloadFileAsync(new Uri(UpdateUri), UpdateFileLocalPath);
+                }
+                else
+                {
+                    webClient.DownloadFile(new Uri(UpdateUri), UpdateFileLocalPath);
+                    checkForUpdatesCompleted(null, null);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Exception thrown while trying to check for updates: {0}", ex.Message);
+            }
+        }
+
+        /// <summary>Checks the downloaded version file to see if there's a newer version, and displays a message if needed.</summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">
+        ///     The <see cref="AsyncCompletedEventArgs" /> instance containing the event data.
+        /// </param>
+        private static void checkForUpdatesCompleted(object sender, AsyncCompletedEventArgs e)
+        {
+            string[] updateInfo;
+            string[] versionParts;
+            try
+            {
+                updateInfo = File.ReadAllLines(UpdateFileLocalPath);
+                versionParts = updateInfo[0].Split('.');
+            }
+            catch
+            {
+                return;
+            }
+            var curVersionParts = Assembly.GetExecutingAssembly().GetName().Version.ToString().Split('.');
+            var iVP = new int[versionParts.Length];
+            var iCVP = new int[versionParts.Length];
+            for (var i = 0; i < versionParts.Length; i++)
+            {
+                iVP[i] = Convert.ToInt32(versionParts[i]);
+                iCVP[i] = Convert.ToInt32(curVersionParts[i]);
+                if (iCVP[i] > iVP[i])
+                {
+                    break;
+                }
+                if (iVP[i] > iCVP[i])
+                {
+                    var changelog = "\n\nVersion " + String.Join(".", versionParts);
+                    try
+                    {
+                        for (var j = 2; j < updateInfo.Length; j++)
+                        {
+                            changelog += "\n" + updateInfo[j].Replace('\t', ' ');
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine("Exception thrown while trying to check for updates: {0}", ex.Message);
+                    }
+                    var mbr = MessageBox.Show(
+                        "A new version is available! Would you like to download it?" + changelog,
+                        App.AppName,
+                        MessageBoxButton.YesNo,
+                        MessageBoxImage.Information);
+                    if (mbr == MessageBoxResult.Yes)
+                    {
+                        Process.Start(updateInfo[1]);
+                        break;
+                    }
+                    return;
+                }
+            }
         }
 
         private void prepareExpanded(IEnumerable<FooViewModel> list)

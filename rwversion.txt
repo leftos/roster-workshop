@@ -1,7 +1,4 @@
-0.1.0.0
-http://downloadurl
-http://installerurl
-http://supporturl
-http://students.ceid.upatras.gr/~aslanoglou/rwchangelog.txt
+0.1.0.1
+http://forums.nba-live.com/downloads.php?view=detail&df_id=5117
 
 	

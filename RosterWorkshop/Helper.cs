@@ -18,8 +18,6 @@
 
 #region Using Directives
 
-
-
 #endregion
 
 namespace RosterWorkshop

@@ -16,12 +16,6 @@
 
 #endregion
 
-#region Using Directives
-
-
-
-#endregion
-
 namespace RosterWorkshop
 {
     #region Using Directives
@@ -41,8 +35,6 @@ namespace RosterWorkshop
         public static void FixSorting(string path)
         {
             var files = Directory.GetFiles(path).ToList();
-            //TODO: Fix if Players3 tab is fixed
-            files.Remove(files.Single(name => name.Contains("Players3")));
             //
             foreach (var file in files)
             {

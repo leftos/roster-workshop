@@ -7,52 +7,41 @@
 
 #endregion
 
-using System.Windows;
-using System.Windows.Controls.Primitives;
-using System.Windows.Input;
-
 namespace TreeViewWithCheckBoxesLib
 {
+    using System.Windows;
+    using System.Windows.Controls.Primitives;
+    using System.Windows.Input;
+
     public static class VirtualToggleButton
     {
         #region attached properties
 
         #region IsChecked
 
-        /// <summary>
-        ///     IsChecked Attached Dependency Property
-        /// </summary>
-        public static readonly DependencyProperty IsCheckedProperty = DependencyProperty.RegisterAttached("IsChecked", typeof (bool?),
-                                                                                                          typeof (VirtualToggleButton),
-                                                                                                          new FrameworkPropertyMetadata(
-                                                                                                              (bool?) false,
-                                                                                                              FrameworkPropertyMetadataOptions
-                                                                                                                  .BindsTwoWayByDefault |
-                                                                                                              FrameworkPropertyMetadataOptions
-                                                                                                                  .Journal,
-                                                                                                              OnIsCheckedChanged));
+        /// <summary>IsChecked Attached Dependency Property</summary>
+        public static readonly DependencyProperty IsCheckedProperty = DependencyProperty.RegisterAttached(
+            "IsChecked",
+            typeof(bool?),
+            typeof(VirtualToggleButton),
+            new FrameworkPropertyMetadata(
+                (bool?) false,
+                FrameworkPropertyMetadataOptions.BindsTwoWayByDefault | FrameworkPropertyMetadataOptions.Journal,
+                OnIsCheckedChanged));
 
-        /// <summary>
-        ///     Gets the IsChecked property.  This dependency property
-        ///     indicates whether the toggle button is checked.
-        /// </summary>
+        /// <summary>Gets the IsChecked property.  This dependency property indicates whether the toggle button is checked.</summary>
         public static bool? GetIsChecked(DependencyObject d)
         {
             return (bool?) d.GetValue(IsCheckedProperty);
         }
 
-        /// <summary>
-        ///     Sets the IsChecked property.  This dependency property
-        ///     indicates whether the toggle button is checked.
-        /// </summary>
+        /// <summary>Sets the IsChecked property.  This dependency property indicates whether the toggle button is checked.</summary>
         public static void SetIsChecked(DependencyObject d, bool? value)
         {
             d.SetValue(IsCheckedProperty, value);
         }
 
-        /// <summary>
-        ///     Handles changes to the IsChecked property.
-        /// </summary>
+        /// <summary>Handles changes to the IsChecked property.</summary>
         private static void OnIsCheckedChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var pseudobutton = d as UIElement;
@@ -78,17 +67,12 @@ namespace TreeViewWithCheckBoxesLib
 
         #region IsThreeState
 
-        /// <summary>
-        ///     IsThreeState Attached Dependency Property
-        /// </summary>
-        public static readonly DependencyProperty IsThreeStateProperty = DependencyProperty.RegisterAttached("IsThreeState", typeof (bool),
-                                                                                                             typeof (VirtualToggleButton),
-                                                                                                             new FrameworkPropertyMetadata(
-                                                                                                                 false));
+        /// <summary>IsThreeState Attached Dependency Property</summary>
+        public static readonly DependencyProperty IsThreeStateProperty = DependencyProperty.RegisterAttached(
+            "IsThreeState", typeof(bool), typeof(VirtualToggleButton), new FrameworkPropertyMetadata(false));
 
         /// <summary>
-        ///     Gets the IsThreeState property.  This dependency property
-        ///     indicates whether the control supports two or three states.
+        ///     Gets the IsThreeState property.  This dependency property indicates whether the control supports two or three states.
         ///     IsChecked can be set to null as a third state when IsThreeState is true.
         /// </summary>
         public static bool GetIsThreeState(DependencyObject d)
@@ -97,8 +81,7 @@ namespace TreeViewWithCheckBoxesLib
         }
 
         /// <summary>
-        ///     Sets the IsThreeState property.  This dependency property
-        ///     indicates whether the control supports two or three states.
+        ///     Sets the IsThreeState property.  This dependency property indicates whether the control supports two or three states.
         ///     IsChecked can be set to null as a third state when IsThreeState is true.
         /// </summary>
         public static void SetIsThreeState(DependencyObject d, bool value)
@@ -110,17 +93,18 @@ namespace TreeViewWithCheckBoxesLib
 
         #region IsVirtualToggleButton
 
-        /// <summary>
-        ///     IsVirtualToggleButton Attached Dependency Property
-        /// </summary>
+        /// <summary>IsVirtualToggleButton Attached Dependency Property</summary>
         public static readonly DependencyProperty IsVirtualToggleButtonProperty =
-            DependencyProperty.RegisterAttached("IsVirtualToggleButton", typeof (bool), typeof (VirtualToggleButton),
-                                                new FrameworkPropertyMetadata(false, OnIsVirtualToggleButtonChanged));
+            DependencyProperty.RegisterAttached(
+                "IsVirtualToggleButton",
+                typeof(bool),
+                typeof(VirtualToggleButton),
+                new FrameworkPropertyMetadata(false, OnIsVirtualToggleButtonChanged));
 
         /// <summary>
-        ///     Gets the IsVirtualToggleButton property.  This dependency property
-        ///     indicates whether the object to which the property is attached is treated as a VirtualToggleButton.
-        ///     If true, the object will respond to keyboard and mouse input the same way a ToggleButton would.
+        ///     Gets the IsVirtualToggleButton property.  This dependency property indicates whether the object to which the property is
+        ///     attached is treated as a VirtualToggleButton. If true, the object will respond to keyboard and mouse input the same way a
+        ///     ToggleButton would.
         /// </summary>
         public static bool GetIsVirtualToggleButton(DependencyObject d)
         {
@@ -128,18 +112,16 @@ namespace TreeViewWithCheckBoxesLib
         }
 
         /// <summary>
-        ///     Sets the IsVirtualToggleButton property.  This dependency property
-        ///     indicates whether the object to which the property is attached is treated as a VirtualToggleButton.
-        ///     If true, the object will respond to keyboard and mouse input the same way a ToggleButton would.
+        ///     Sets the IsVirtualToggleButton property.  This dependency property indicates whether the object to which the property is
+        ///     attached is treated as a VirtualToggleButton. If true, the object will respond to keyboard and mouse input the same way a
+        ///     ToggleButton would.
         /// </summary>
         public static void SetIsVirtualToggleButton(DependencyObject d, bool value)
         {
             d.SetValue(IsVirtualToggleButtonProperty, value);
         }
 
-        /// <summary>
-        ///     Handles changes to the IsVirtualToggleButton property.
-        /// </summary>
+        /// <summary>Handles changes to the IsVirtualToggleButton property.</summary>
         private static void OnIsVirtualToggleButtonChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var element = d as IInputElement;
@@ -166,14 +148,14 @@ namespace TreeViewWithCheckBoxesLib
 
         #region Checked
 
-        /// <summary>
-        ///     A static helper method to raise the Checked event on a target element.
-        /// </summary>
+        /// <summary>A static helper method to raise the Checked event on a target element.</summary>
         /// <param name="target">UIElement or ContentElement on which to raise the event</param>
         internal static RoutedEventArgs RaiseCheckedEvent(UIElement target)
         {
             if (target == null)
+            {
                 return null;
+            }
 
             var args = new RoutedEventArgs();
             args.RoutedEvent = ToggleButton.CheckedEvent;
@@ -185,14 +167,14 @@ namespace TreeViewWithCheckBoxesLib
 
         #region Unchecked
 
-        /// <summary>
-        ///     A static helper method to raise the Unchecked event on a target element.
-        /// </summary>
+        /// <summary>A static helper method to raise the Unchecked event on a target element.</summary>
         /// <param name="target">UIElement or ContentElement on which to raise the event</param>
         internal static RoutedEventArgs RaiseUncheckedEvent(UIElement target)
         {
             if (target == null)
+            {
                 return null;
+            }
 
             var args = new RoutedEventArgs();
             args.RoutedEvent = ToggleButton.UncheckedEvent;
@@ -204,14 +186,14 @@ namespace TreeViewWithCheckBoxesLib
 
         #region Indeterminate
 
-        /// <summary>
-        ///     A static helper method to raise the Indeterminate event on a target element.
-        /// </summary>
+        /// <summary>A static helper method to raise the Indeterminate event on a target element.</summary>
         /// <param name="target">UIElement or ContentElement on which to raise the event</param>
         internal static RoutedEventArgs RaiseIndeterminateEvent(UIElement target)
         {
             if (target == null)
+            {
                 return null;
+            }
 
             var args = new RoutedEventArgs();
             args.RoutedEvent = ToggleButton.IndeterminateEvent;
@@ -239,7 +221,9 @@ namespace TreeViewWithCheckBoxesLib
                 {
                     // ignore alt+space which invokes the system menu
                     if ((Keyboard.Modifiers & ModifierKeys.Alt) == ModifierKeys.Alt)
+                    {
                         return;
+                    }
 
                     UpdateIsChecked(sender as DependencyObject);
                     e.Handled = true;

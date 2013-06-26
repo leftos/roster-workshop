@@ -7,11 +7,11 @@
 
 #endregion
 
-using System.Collections.Generic;
-using System.ComponentModel;
-
 namespace TreeViewWithCheckBoxesLib
 {
+    using System.Collections.Generic;
+    using System.ComponentModel;
+
     public class FooViewModel : INotifyPropertyChanged
     {
         #region Data
@@ -34,44 +34,27 @@ namespace TreeViewWithCheckBoxesLib
         public static List<FooViewModel> CreateFoos()
         {
             var root = new FooViewModel("Weapons")
-                       {
-                           IsInitiallySelected = true,
-                           Children =
-                           {
-                               new FooViewModel("Blades")
-                               {
-                                   Children =
-                                   {
-                                       new FooViewModel("Dagger"),
-                                       new FooViewModel("Machete"),
-                                       new FooViewModel("Sword"),
-                                   }
-                               },
-                               new FooViewModel("Vehicles")
-                               {
-                                   Children =
-                                   {
-                                       new FooViewModel(
-                                           "Apache Helicopter"),
-                                       new FooViewModel(
-                                           "Submarine"),
-                                       new FooViewModel("Tank"),
-                                   }
-                               },
-                               new FooViewModel("Guns")
-                               {
-                                   Children =
-                                   {
-                                       new FooViewModel("AK 47"),
-                                       new FooViewModel("Beretta"),
-                                       new FooViewModel("Uzi"),
-                                   }
-                               },
-                           }
-                       };
+                {
+                    IsInitiallySelected = true,
+                    Children =
+                        {
+                            new FooViewModel("Blades")
+                                {
+                                    Children = { new FooViewModel("Dagger"), new FooViewModel("Machete"), new FooViewModel("Sword"), }
+                                },
+                            new FooViewModel("Vehicles")
+                                {
+                                    Children = { new FooViewModel("Apache Helicopter"), new FooViewModel("Submarine"), new FooViewModel("Tank"), }
+                                },
+                            new FooViewModel("Guns")
+                                {
+                                    Children = { new FooViewModel("AK 47"), new FooViewModel("Beretta"), new FooViewModel("Uzi"), }
+                                },
+                        }
+                };
 
             root.Initialize();
-            return new List<FooViewModel> {root};
+            return new List<FooViewModel> { root };
         }
 
         // Edit by Lefteris Aslanoglou
@@ -104,11 +87,9 @@ namespace TreeViewWithCheckBoxesLib
         #region IsChecked
 
         /// <summary>
-        ///     Gets/sets the state of the associated UI toggle (ex. CheckBox).
-        ///     The return value is calculated based on the check state of all
-        ///     child FooViewModels.  Setting this property to true or false
-        ///     will set all children to the same check state, and setting it
-        ///     to any value will cause the parent to verify its check state.
+        ///     Gets/sets the state of the associated UI toggle (ex. CheckBox). The return value is calculated based on the check state of
+        ///     all child FooViewModels.  Setting this property to true or false will set all children to the same check state, and setting it to
+        ///     any value will cause the parent to verify its check state.
         /// </summary>
         public bool? IsChecked
         {
@@ -119,15 +100,21 @@ namespace TreeViewWithCheckBoxesLib
         private void SetIsChecked(bool? value, bool updateChildren, bool updateParent)
         {
             if (value == _isChecked)
+            {
                 return;
+            }
 
             _isChecked = value;
 
             if (updateChildren && _isChecked.HasValue)
+            {
                 Children.ForEach(c => c.SetIsChecked(_isChecked, true, false));
+            }
 
             if (updateParent && _parent != null)
+            {
                 _parent.VerifyCheckState();
+            }
 
             OnPropertyChanged("IsChecked");
         }
@@ -159,12 +146,14 @@ namespace TreeViewWithCheckBoxesLib
 
         public event PropertyChangedEventHandler PropertyChanged;
 
+        #endregion
+
         private void OnPropertyChanged(string prop)
         {
             if (PropertyChanged != null)
+            {
                 PropertyChanged(this, new PropertyChangedEventArgs(prop));
+            }
         }
-
-        #endregion
     }
 }
