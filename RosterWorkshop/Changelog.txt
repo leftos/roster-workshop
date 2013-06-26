@@ -1,5 +1,8 @@
 ﻿Roster Workshop Version History
 
+	v0.1.0.2
+		- Fix: Fixed crash when the REDitor-exported CSV files were in an encoding other than ASCII
+
 	v0.1.0.1
 		- Fix: Fixed crash due to the different data provided by the final version of REDitor MC
 
