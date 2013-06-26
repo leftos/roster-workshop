@@ -45,9 +45,6 @@
     <Reference Include="LeftosCommonLibrary">
       <HintPath>.\LeftosCommonLibrary.dll</HintPath>
     </Reference>
-    <Reference Include="LumenWorks.Framework.IO">
-      <HintPath>.\LumenWorks.Framework.IO.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
