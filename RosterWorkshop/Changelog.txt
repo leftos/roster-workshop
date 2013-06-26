@@ -1,7 +1,7 @@
 ﻿Roster Workshop Version History
 
 	v0.1.0.1
-		- Fixed crashes due to changes in REDitor MC's final version's data
+		- Fix: Fixed crash due to the different data provided by the final version of REDitor MC
 
 	v0.1
 		- Initial Release
