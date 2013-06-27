@@ -1,5 +1,8 @@
 ﻿Roster Workshop Version History
 
+	v0.1.0.3
+		- Change: "Base" is now "Merge To", "Merge With" is now "Merge From", "Repair Base Roster" is now "Repair Base (Merge To) Roster"
+
 	v0.1.0.2
 		- Fix: Fixed crash when the REDitor-exported CSV files were in an encoding other than ASCII
 
