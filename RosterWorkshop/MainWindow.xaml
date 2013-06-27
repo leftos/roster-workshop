@@ -38,7 +38,7 @@
             <RowDefinition Height="130" />
         </Grid.RowDefinitions>
         <Grid Grid.Row="0">
-            <TextBlock HorizontalAlignment="Left" Margin="10,13,0,0" TextWrapping="Wrap" Text="Base"
+            <TextBlock HorizontalAlignment="Left" Margin="10,13,0,0" TextWrapping="Wrap" Text="Merge To"
                        VerticalAlignment="Top" />
             <TextBox Name="txtRosterBase" HorizontalAlignment="Stretch" VerticalAlignment="Top" Margin="85,10,95,0"
                      TextChanged="txtRosterBase_TextChanged" />
@@ -47,7 +47,7 @@
                     Width="75" Content="Browse" Click="btnOpenRosterBase_Click" />
         </Grid>
         <Grid Grid.Row="1">
-            <TextBlock HorizontalAlignment="Left" Margin="10,8,0,0" TextWrapping="Wrap" Text="Merge with"
+            <TextBlock HorizontalAlignment="Left" Margin="10,8,0,0" TextWrapping="Wrap" Text="Merge From"
                        VerticalAlignment="Top" />
             <ListBox Name="lstRostersToMerge" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                      Margin="85,5,95,5" SelectionChanged="lstRostersToMerge_SelectionChanged" />
@@ -81,8 +81,13 @@
             </GroupBox>
             <CheckBox x:Name="chkPlayersSkipFA" Content="Skip Free Agents" HorizontalAlignment="Left"
                       Margin="183,0,0,104" VerticalAlignment="Bottom" />
-            <Button Content="Repair Base Roster" HorizontalAlignment="Right" Margin="0,10,10,0" VerticalAlignment="Top"
-                    Width="127" Name="btnRepair" Click="btnRepair_Click">
+            <Button HorizontalAlignment="Right" Margin="0,10,10,0" VerticalAlignment="Top"
+                    Width="127" Name="btnRepair" Click="btnRepair_Click" Height="46">
+                <Button.Content>
+                    <TextBlock TextAlignment="Center">
+                        Repair Base <LineBreak />(Merge To) Roster
+                    </TextBlock>
+                </Button.Content>
                 <Button.ContextMenu>
                     <ContextMenu Name="mnuRepair">
                         <MenuItem Header="Fix TeamIDs and Free Agent Contracts" Name="mnuRepairFixTeamIDs"
