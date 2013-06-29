@@ -34,7 +34,7 @@ namespace RosterWorkshop
     {
         public static void FixSorting(string path)
         {
-            var files = Directory.GetFiles(path).ToList();
+            var files = Directory.GetFiles(path, "*.csv").ToList();
             //
             foreach (var file in files)
             {
