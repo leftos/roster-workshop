@@ -57,10 +57,10 @@ namespace RosterWorkshop
         {
             InitializeComponent();
 
-            Height = Helper.GetRegistrySetting("Height", (int) Height);
-            Width = Helper.GetRegistrySetting("Width", (int) Width);
-            Left = Helper.GetRegistrySetting("Left", 0);
-            Top = Helper.GetRegistrySetting("Top", 0);
+            Height = Tools.GetRegistrySetting("Height", (int) Height);
+            Width = Tools.GetRegistrySetting("Width", (int) Width);
+            Left = Tools.GetRegistrySetting("Left", 0);
+            Top = Tools.GetRegistrySetting("Top", 0);
         }
 
         private ObservableCollection<string> rostersToMerge { get; set; }
@@ -68,6 +68,10 @@ namespace RosterWorkshop
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            Tools.AppName = App.AppName;
+            Tools.AppRegistryKey = App.AppRegistryKey;
+            Tools.OpenRegistryKey(true);
+
             var w = new BackgroundWorker();
             w.DoWork += (o, args) => CheckForUpdates();
             w.RunWorkerAsync();
@@ -222,7 +226,7 @@ namespace RosterWorkshop
 
         private void btnOpenRosterBase_Click(object sender, RoutedEventArgs e)
         {
-            var path = Helper.GetRegistrySetting("BaseRosterPath", Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments));
+            var path = Tools.GetRegistrySetting("BaseRosterPath", Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments));
             var ofd = new OpenFileDialog
                 {
                     Title = "Select the Players.csv exported from REditor",
@@ -237,12 +241,12 @@ namespace RosterWorkshop
             }
 
             txtRosterBase.Text = Path.GetDirectoryName(ofd.FileName);
-            Helper.SetRegistrySetting("BaseRosterPath", Path.GetDirectoryName(ofd.FileName));
+            Tools.SetRegistrySetting("BaseRosterPath", Path.GetDirectoryName(ofd.FileName));
         }
 
         private void btnRTMAdd_Click(object sender, RoutedEventArgs e)
         {
-            var path = Helper.GetRegistrySetting("MergeRosterPath", Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments));
+            var path = Tools.GetRegistrySetting("MergeRosterPath", Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments));
             var ofd = new OpenFileDialog
                 {
                     Title = "Select the Players.csv exported from REditor",
@@ -257,7 +261,7 @@ namespace RosterWorkshop
             }
 
             rostersToMerge.Add(Path.GetDirectoryName(ofd.FileName));
-            Helper.SetRegistrySetting("MergeRosterPath", Path.GetDirectoryName(ofd.FileName));
+            Tools.SetRegistrySetting("MergeRosterPath", Path.GetDirectoryName(ofd.FileName));
 
             if (lstRostersToMerge.SelectedIndex == -1)
             {
@@ -444,8 +448,12 @@ namespace RosterWorkshop
                 catch
                 {
                     MessageBox.Show(
-                        "You have selected zero or more than one roster to copy team information from. You must only "
-                        + "select one roster for that for those particular categories.");
+                        "You have chosen to merge teams, however you didn't select any (or selected more than one) file that you want "
+                        + "to merge team information from. Please select one of the files in your Merge From list, then select the team "
+                        + "information data you want to merge over (e.g. Rosters, Jerseys, etc.).",
+                        App.AppName,
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
                     return;
                 }
 
@@ -1158,7 +1166,7 @@ namespace RosterWorkshop
             else
             {
                 MessageBox.Show(
-                    "Done but with errors. Open the tracelog.txt file located in My Documents\\Roster Workshop to " + "find out more.",
+                    "Done but with errors. Open the tracelog.txt file located in My Documents\\Roster Workshop to find out more.",
                     App.AppName,
                     MessageBoxButton.OK,
                     MessageBoxImage.Warning);
@@ -1899,10 +1907,10 @@ namespace RosterWorkshop
 
         private void Window_Closing(object sender, CancelEventArgs e)
         {
-            Helper.SetRegistrySetting("Height", Height);
-            Helper.SetRegistrySetting("Width", Width);
-            Helper.SetRegistrySetting("Left", Left);
-            Helper.SetRegistrySetting("Top", Top);
+            Tools.SetRegistrySetting("Height", Height);
+            Tools.SetRegistrySetting("Width", Width);
+            Tools.SetRegistrySetting("Left", Left);
+            Tools.SetRegistrySetting("Top", Top);
         }
 
         private void mnuRepairFixASAIDs_Click(object sender, RoutedEventArgs e)

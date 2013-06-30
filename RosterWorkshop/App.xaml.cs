@@ -165,13 +165,8 @@ namespace RosterWorkshop
 
             Trace.Listeners.Clear();
 
-            var twtl = new TextWriterTraceListener(AppDocsPath + @"\tracelog.txt")
-                {
-                    Name = "TextLogger",
-                    TraceOutputOptions = TraceOptions.ThreadId | TraceOptions.DateTime
-                };
-
-            var ctl = new ConsoleTraceListener(false) { TraceOutputOptions = TraceOptions.DateTime };
+            var twtl = new TextWriterTraceListener(AppDocsPath + @"\tracelog.txt");
+            var ctl = new ConsoleTraceListener(false);
 
             Trace.Listeners.Add(twtl);
             Trace.Listeners.Add(ctl);

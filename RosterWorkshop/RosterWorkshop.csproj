@@ -84,7 +84,6 @@
     <Compile Include="ConflictWindow.xaml.cs">
       <DependentUpon>ConflictWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Helper.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>

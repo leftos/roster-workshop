@@ -64,7 +64,7 @@
                 ItemTemplate="{StaticResource CheckBoxItemTemplate}" />
         </Grid>
         <Grid Grid.Row="3">
-            <GroupBox Header="Team Rosters" HorizontalAlignment="Left" Margin="10,5,0,12">
+            <GroupBox Header="Merge Teams" HorizontalAlignment="Left" Margin="10,5,0,12">
                 <StackPanel>
                     <RadioButton x:Name="rbTeamsNone" Content="None" Margin="3" />
                     <RadioButton x:Name="rbTeamsCurrent" Content="Current" Margin="3" />
