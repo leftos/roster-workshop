@@ -6,7 +6,7 @@ Players
 	General
 		IsRegNBA
 		IsSpecial
-		CAPType
+		SlotType
 		IsGener
 		IsDraftee
 		IsDrafted

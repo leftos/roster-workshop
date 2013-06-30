@@ -854,7 +854,17 @@ namespace RosterWorkshop
                             "Player Stats",
                             "Records"
                         };
+
                     var columnsToMerge = allChecked.Where(prop => !notPlayerColumns.Contains(prop)).ToList();
+
+                    foreach (var col in columnsToMerge.Where(c => !playersBase.First().ContainsKey(c)))
+                    {
+                        if (!playersBase.First().ContainsKey(col))
+                        {
+                            App.ErrorReport(new Exception(col + " column wasn't found in the CSV."));
+                            return;
+                        }
+                    }
 
                     if (allChecked.Contains("Headshape"))
                     {
